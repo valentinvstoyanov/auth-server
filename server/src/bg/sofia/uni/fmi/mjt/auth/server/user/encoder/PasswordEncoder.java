@@ -1,4 +1,4 @@
-package bg.sofia.uni.fmi.mjt.auth.server;
+package bg.sofia.uni.fmi.mjt.auth.server.user.encoder;
 
 public interface PasswordEncoder {
 

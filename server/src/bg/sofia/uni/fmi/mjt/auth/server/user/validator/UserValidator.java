@@ -1,4 +1,6 @@
-package bg.sofia.uni.fmi.mjt.auth.server;
+package bg.sofia.uni.fmi.mjt.auth.server.user.validator;
+
+import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUserDataException;
 
 public interface UserValidator {
 

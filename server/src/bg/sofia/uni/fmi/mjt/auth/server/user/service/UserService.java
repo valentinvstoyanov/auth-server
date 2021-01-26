@@ -1,4 +1,7 @@
-package bg.sofia.uni.fmi.mjt.auth.server;
+package bg.sofia.uni.fmi.mjt.auth.server.user.service;
+
+import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUserDataException;
+import bg.sofia.uni.fmi.mjt.auth.server.user.exception.UsernameAlreadyTakenException;
 
 public interface UserService {
 

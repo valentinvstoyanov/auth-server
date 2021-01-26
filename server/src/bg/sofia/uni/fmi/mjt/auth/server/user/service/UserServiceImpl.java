@@ -1,4 +1,12 @@
-package bg.sofia.uni.fmi.mjt.auth.server;
+package bg.sofia.uni.fmi.mjt.auth.server.user.service;
+
+import bg.sofia.uni.fmi.mjt.auth.server.user.encoder.PasswordEncoder;
+import bg.sofia.uni.fmi.mjt.auth.server.user.validator.UserValidator;
+import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUserDataException;
+import bg.sofia.uni.fmi.mjt.auth.server.user.exception.UsernameAlreadyTakenException;
+import bg.sofia.uni.fmi.mjt.auth.server.user.model.User;
+import bg.sofia.uni.fmi.mjt.auth.server.user.repository.SessionRepository;
+import bg.sofia.uni.fmi.mjt.auth.server.user.repository.UserRepository;
 
 public class UserServiceImpl implements UserService {
 
