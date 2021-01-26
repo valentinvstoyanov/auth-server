@@ -2,12 +2,15 @@ package bg.sofia.uni.fmi.mjt.auth.server.user.service;
 
 import bg.sofia.uni.fmi.mjt.auth.server.user.encoder.PasswordEncoder;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUsernamePasswordCombination;
+import bg.sofia.uni.fmi.mjt.auth.server.user.model.Session;
 import bg.sofia.uni.fmi.mjt.auth.server.user.validator.UserValidator;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUserDataException;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.UsernameAlreadyTakenException;
 import bg.sofia.uni.fmi.mjt.auth.server.user.model.User;
 import bg.sofia.uni.fmi.mjt.auth.server.user.repository.SessionRepository;
 import bg.sofia.uni.fmi.mjt.auth.server.user.repository.UserRepository;
+
+import java.time.LocalDateTime;
 
 public class UserServiceImpl implements UserService {
 
@@ -57,7 +60,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String login(final String sessionId) {
-        return null;
+        final Session session = sessionRepository.getById(sessionId);
+        return session != null ? session.id() : null;
     }
 
     @Override

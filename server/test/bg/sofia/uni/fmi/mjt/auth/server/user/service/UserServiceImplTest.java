@@ -4,6 +4,7 @@ import bg.sofia.uni.fmi.mjt.auth.server.user.encoder.PasswordEncoder;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUserDataException;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUsernamePasswordCombination;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.UsernameAlreadyTakenException;
+import bg.sofia.uni.fmi.mjt.auth.server.user.model.Session;
 import bg.sofia.uni.fmi.mjt.auth.server.user.model.User;
 import bg.sofia.uni.fmi.mjt.auth.server.user.repository.SessionRepository;
 import bg.sofia.uni.fmi.mjt.auth.server.user.repository.UserRepository;
@@ -15,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -24,6 +26,8 @@ import static org.mockito.Mockito.when;
 public class UserServiceImplTest {
 
     private static final String TEST_SESSION_ID = "testSessionId";
+    private static final Session TEST_SESSION = new Session(TEST_SESSION_ID);
+
     private static final String TEST_USERNAME = "testUsername";
     private static final String TEST_PASSWORD = "testPassword";
     private static final String TEST_FIRST_NAME = "testFirstName";
@@ -174,6 +178,22 @@ public class UserServiceImplTest {
 
         verify(sessionRepositoryMock, times(1)).create(TEST_USERNAME);
         verify(userRepositoryMock, times(1)).getByUsername(TEST_USERNAME);
+    }
+
+    @Test
+    public void testLoginWithSessionIdReturnsNullWhenThereIsNoSuchSession() {
+        when(sessionRepositoryMock.getById(TEST_SESSION_ID)).thenReturn(null);
+
+        final String actual = userService.login(TEST_SESSION_ID);
+        assertNull("should return null", actual);
+    }
+
+    @Test
+    public void testLoginWithSessionIdReturnsSessionIdWhenThereIsSuchSession() {
+        when(sessionRepositoryMock.getById(TEST_SESSION_ID)).thenReturn(TEST_SESSION);
+
+        final String actual = userService.login(TEST_SESSION_ID);
+        assertEquals("should return test session id", TEST_SESSION_ID, actual);
     }
 
 }

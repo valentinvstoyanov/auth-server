@@ -33,6 +33,12 @@ public interface UserService {
      *                                        match <code>password</code> against the password of the registered user
      */
     String login(String username, String password) throws InvalidUserDataException, InvalidUsernamePasswordCombination;
+
+    /**
+     * Returns the <code>sessionId</code> if it is associated with a session.
+     * @param sessionId string specifying the session to look for
+     * @return <code>sessionId</code> if session with such id exists, null otherwise
+     */
     String login(String sessionId);
 
     void logout(String sessionId);
