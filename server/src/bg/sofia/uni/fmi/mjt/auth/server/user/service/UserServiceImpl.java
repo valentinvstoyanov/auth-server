@@ -1,6 +1,7 @@
 package bg.sofia.uni.fmi.mjt.auth.server.user.service;
 
 import bg.sofia.uni.fmi.mjt.auth.server.user.encoder.PasswordEncoder;
+import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUsernamePasswordCombination;
 import bg.sofia.uni.fmi.mjt.auth.server.user.validator.UserValidator;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUserDataException;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.UsernameAlreadyTakenException;
@@ -29,6 +30,7 @@ public class UserServiceImpl implements UserService {
                            final String email) throws UsernameAlreadyTakenException, InvalidUserDataException {
 
         userValidator.validate(username, password, firstName, lastName, email);
+
         if (userRepository.getByUsername(username) != null) {
             throw new UsernameAlreadyTakenException(username);
         }
@@ -40,8 +42,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String login(final String username, final String password) {
-        return null;
+    public String login(final String username, final String password)
+            throws InvalidUserDataException, InvalidUsernamePasswordCombination {
+
+        userValidator.validate(username, password);
+
+        final User user = userRepository.getByUsername(username);
+        if (user == null || !passwordEncoder.match(password, user.password())) {
+            throw new InvalidUsernamePasswordCombination();
+        }
+
+        return sessionRepository.create(username);
     }
 
     @Override

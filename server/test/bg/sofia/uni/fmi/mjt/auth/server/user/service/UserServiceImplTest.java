@@ -2,6 +2,7 @@ package bg.sofia.uni.fmi.mjt.auth.server.user.service;
 
 import bg.sofia.uni.fmi.mjt.auth.server.user.encoder.PasswordEncoder;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUserDataException;
+import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUsernamePasswordCombination;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.UsernameAlreadyTakenException;
 import bg.sofia.uni.fmi.mjt.auth.server.user.model.User;
 import bg.sofia.uni.fmi.mjt.auth.server.user.repository.SessionRepository;
@@ -63,38 +64,50 @@ public class UserServiceImplTest {
     }
 
     @Test(expected = InvalidUserDataException.class)
-    public void testRegisterThrowsOnInvalidUsername() throws InvalidUserDataException, UsernameAlreadyTakenException {
+    public void testRegisterThrowsWhenUsernameIsNotValid()
+            throws InvalidUserDataException, UsernameAlreadyTakenException {
+
         testRegisterWithInvalidData("", TEST_PASSWORD, TEST_FIRST_NAME, TEST_LAST_NAME, TEST_EMAIL);
     }
 
     @Test(expected = InvalidUserDataException.class)
-    public void testRegisterThrowsOnInvalidPassword() throws InvalidUserDataException, UsernameAlreadyTakenException {
+    public void testRegisterThrowsWhenPasswordIsNotValid()
+            throws InvalidUserDataException, UsernameAlreadyTakenException {
+
         testRegisterWithInvalidData(TEST_USERNAME, "", TEST_FIRST_NAME, TEST_LAST_NAME, TEST_EMAIL);
     }
 
     @Test(expected = InvalidUserDataException.class)
-    public void testRegisterThrowsOnInvalidFirstName() throws InvalidUserDataException, UsernameAlreadyTakenException {
+    public void testRegisterThrowsWhenFirstNameIsNotValid()
+            throws InvalidUserDataException, UsernameAlreadyTakenException {
+
         testRegisterWithInvalidData(TEST_USERNAME, TEST_PASSWORD, "", TEST_LAST_NAME, TEST_EMAIL);
     }
 
     @Test(expected = InvalidUserDataException.class)
-    public void testRegisterThrowsOnInvalidLastName() throws InvalidUserDataException, UsernameAlreadyTakenException {
+    public void testRegisterThrowsWhenLastNameIsNotValid()
+            throws InvalidUserDataException, UsernameAlreadyTakenException {
+
         testRegisterWithInvalidData(TEST_USERNAME, TEST_PASSWORD, TEST_FIRST_NAME, "", TEST_EMAIL);
     }
 
     @Test(expected = InvalidUserDataException.class)
-    public void testRegisterThrowsOnInvalidEmail() throws InvalidUserDataException, UsernameAlreadyTakenException {
+    public void testRegisterThrowsWhenEmailIsNotValid()
+            throws InvalidUserDataException, UsernameAlreadyTakenException {
+
         testRegisterWithInvalidData(TEST_USERNAME, TEST_PASSWORD, TEST_FIRST_NAME, TEST_LAST_NAME, "");
     }
 
     @Test(expected = UsernameAlreadyTakenException.class)
-    public void testRegisterThrowsOnExistingUser() throws UsernameAlreadyTakenException, InvalidUserDataException {
+    public void testRegisterThrowsWhenUserAlreadyExists()
+            throws UsernameAlreadyTakenException, InvalidUserDataException {
+
         when(userRepositoryMock.getByUsername(TEST_USERNAME)).thenReturn(TEST_USER);
         userService.register(TEST_USERNAME, TEST_PASSWORD, TEST_FIRST_NAME, TEST_LAST_NAME, TEST_EMAIL);
     }
 
     @Test
-    public void testRegisterReturnsSessionId() throws UsernameAlreadyTakenException, InvalidUserDataException {
+    public void testRegisterReturnsCorrectSessionId() throws UsernameAlreadyTakenException, InvalidUserDataException {
         when(userRepositoryMock.getByUsername(TEST_USERNAME)).thenReturn(null);
         when(sessionRepositoryMock.create(TEST_USERNAME)).thenReturn(TEST_SESSION_ID);
         when(passwordEncoderMock.encode(TEST_PASSWORD)).thenReturn(TEST_PASSWORD);
@@ -107,6 +120,60 @@ public class UserServiceImplTest {
         verify(sessionRepositoryMock, times(1)).create(TEST_USERNAME);
         verify(userRepositoryMock, times(1)).getByUsername(TEST_USERNAME);
         verify(userRepositoryMock, times(1)).create(TEST_USER);
+    }
+
+    private void testLoginWhenUsernamePasswordIsNotValid(final String username, final String password)
+            throws InvalidUserDataException, InvalidUsernamePasswordCombination {
+
+        doThrow(InvalidUserDataException.class)
+                .when(userValidatorMock)
+                .validate(username, password);
+
+        userService.login(username, password);
+    }
+
+    @Test(expected = InvalidUserDataException.class)
+    public void testLoginThrowsWhenUsernameIsNotValid() throws InvalidUsernamePasswordCombination, InvalidUserDataException {
+        testLoginWhenUsernamePasswordIsNotValid("", TEST_PASSWORD);
+    }
+
+    @Test(expected = InvalidUserDataException.class)
+    public void testLoginThrowsWhenPasswordIsNotValid()
+            throws InvalidUsernamePasswordCombination, InvalidUserDataException {
+
+        testLoginWhenUsernamePasswordIsNotValid(TEST_USERNAME, "");
+    }
+
+    @Test(expected = InvalidUsernamePasswordCombination.class)
+    public void testLoginThrowsWhenUserIsNotRegistered()
+            throws InvalidUsernamePasswordCombination, InvalidUserDataException {
+
+        when(userRepositoryMock.getByUsername(TEST_USERNAME)).thenReturn(null);
+        userService.login(TEST_USERNAME, TEST_PASSWORD);
+    }
+
+    @Test(expected = InvalidUsernamePasswordCombination.class)
+    public void testLoginThrowsWhenPasswordsDoNotMatch()
+            throws InvalidUsernamePasswordCombination, InvalidUserDataException {
+
+        when(userRepositoryMock.getByUsername(TEST_USERNAME)).thenReturn(TEST_USER);
+        when(passwordEncoderMock.match(TEST_PASSWORD, TEST_PASSWORD)).thenReturn(false);
+        userService.login(TEST_USERNAME, TEST_PASSWORD);
+    }
+
+    @Test
+    public void testLoginReturnsCorrectSessionId()
+            throws InvalidUsernamePasswordCombination, InvalidUserDataException {
+
+        when(userRepositoryMock.getByUsername(TEST_USERNAME)).thenReturn(TEST_USER);
+        when(passwordEncoderMock.match(TEST_PASSWORD, TEST_PASSWORD)).thenReturn(true);
+        when(sessionRepositoryMock.create(TEST_USERNAME)).thenReturn(TEST_SESSION_ID);
+
+        final String actual = userService.login(TEST_USERNAME, TEST_PASSWORD);
+        assertEquals("should return test session id", TEST_SESSION_ID, actual);
+
+        verify(sessionRepositoryMock, times(1)).create(TEST_USERNAME);
+        verify(userRepositoryMock, times(1)).getByUsername(TEST_USERNAME);
     }
 
 }
