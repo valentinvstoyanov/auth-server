@@ -16,7 +16,7 @@ public interface UserService {
      * @return the session id for the registered and logged user
      * @throws UsernameAlreadyTakenException If user with the same <code>username</code> is already registered
      * @throws InvalidUserDataException If the validation of <code>username</code>, <code>password</code>,
-     *                                  <code>firstName</code>, <code>lastName</code> or <code>email</code> fails
+     *         <code>firstName</code>, <code>lastName</code> or <code>email</code> fails
      */
     String register(String username, String password, String firstName, String lastName, String email)
             throws UsernameAlreadyTakenException, InvalidUserDataException;
@@ -28,9 +28,9 @@ public interface UserService {
      * @param password string which specifies the password of the user
      * @return the session id for the logged user
      * @throws InvalidUserDataException If the validation of either <code>username</code> or
-     *                                  <code>password</code> fails
+     *         <code>password</code> fails
      * @throws InvalidUsernamePasswordCombination If no user is registered user with <code>username</code> or cannot
-     *                                        match <code>password</code> against the password of the registered user
+     *         match <code>password</code> against the password of the registered user
      */
     String login(String username, String password) throws InvalidUserDataException, InvalidUsernamePasswordCombination;
 
@@ -41,10 +41,27 @@ public interface UserService {
      */
     String login(String sessionId);
 
-    void logout(String sessionId);
+    /**
+     * Invalidates the session associate with <code>sessionId</code>
+     * @param sessionId string specifying the session to be invalidated
+     * @return true if there is such session and it is invalidated, false otherwise
+     */
+    boolean logout(String sessionId);
 
-    void update(String sessionId, String username, String password, String firstName, String lastName, String email);
-    void changePassword(String sessionId, String username, String oldPassword, String newPassword);
+    /**
+     * Updates the user data
+     * @param sessionId string specifying the session of the user
+     * @param username string specifying the new username of the user
+     * @param password string specifying the new password of the user
+     * @param firstName string specifying the new first name of the user
+     * @param lastName string specifying the new last name of the user
+     * @param email string specifying the new email of the user
+     * @throws InvalidUserDataException If the validation of <code>username</code>, <code>password</code>,
+     *         <code>firstName</code>, <code>lastName</code> or <code>email</code> fails
+     * @throws UsernameAlreadyTakenException If user with the same <code>username</code> is already exists
+     */
+    void update(String sessionId, String username, String password, String firstName, String lastName, String email)
+            throws InvalidUserDataException, UsernameAlreadyTakenException;
 
     void addAdmin(String sessionId, String username);
     void removeAdmin(String sessionId, String username);

@@ -8,4 +8,8 @@ public interface SessionRepository {
 
     Session getById(String sessionId);
 
+    boolean deleteById(String sessionId);
+
+    String getUsernameById(String sessionId);
+
 }

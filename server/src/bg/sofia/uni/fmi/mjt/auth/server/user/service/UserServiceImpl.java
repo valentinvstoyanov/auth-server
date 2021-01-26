@@ -65,20 +65,25 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void logout(final String sessionId) {
-
+    public boolean logout(final String sessionId) {
+        return sessionRepository.deleteById(sessionId);
     }
 
     @Override
     public void update(final String sessionId, final String username, final String password, final String firstName,
-                       final String lastName, final String email) {
+                       final String lastName, final String email)
+            throws InvalidUserDataException, UsernameAlreadyTakenException {
 
-    }
+        userValidator.validate(username, password, firstName, lastName, email);
 
-    @Override
-    public void changePassword(final String sessionId, final String username, final String oldPassword,
-                               final String newPassword) {
+        final String oldUsername = sessionRepository.getUsernameById(sessionId);
+        if (!oldUsername.equals(username) && userRepository.getByUsername(username) != null) {
+            throw new UsernameAlreadyTakenException(username);
+        }
 
+        final String encodedPassword = passwordEncoder.encode(password);
+        final User user = new User(username, encodedPassword, firstName, lastName, email);
+        userRepository.update(oldUsername, user);
     }
 
     @Override

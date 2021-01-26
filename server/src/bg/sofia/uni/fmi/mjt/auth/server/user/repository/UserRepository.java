@@ -6,6 +6,8 @@ public interface UserRepository {
 
     void create(User user);
 
+    void update(String oldUsername, User newUser);
+
     User getByUsername(String username);
 
 }
