@@ -10,4 +10,10 @@ public interface UserRepository {
 
     User getByUsername(String username);
 
+    void createAdmin(String username);
+
+    void deleteAdmin(String username);
+
+    void delete(String username);
+
 }

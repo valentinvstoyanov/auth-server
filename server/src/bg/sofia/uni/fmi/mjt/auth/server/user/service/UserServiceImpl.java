@@ -87,18 +87,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void addAdmin(final String sessionId, final String username) {
-
+    public void addAdmin(final String username) {
+        userRepository.createAdmin(username);
     }
 
     @Override
-    public void removeAdmin(final String sessionId, final String username) {
-
+    public void removeAdmin(final String username) {
+        userRepository.deleteAdmin(username);
     }
 
     @Override
-    public void delete(final String sessionId, final String username) {
-
+    public void delete(final String username) {
+        userRepository.delete(username);
     }
 
 }

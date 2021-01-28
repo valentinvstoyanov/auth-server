@@ -63,8 +63,8 @@ public interface UserService {
     void update(String sessionId, String username, String password, String firstName, String lastName, String email)
             throws InvalidUserDataException, UsernameAlreadyTakenException;
 
-    void addAdmin(String sessionId, String username);
-    void removeAdmin(String sessionId, String username);
-    void delete(String sessionId, String username);
+    void addAdmin(String username);
+    void removeAdmin(String username);
+    void delete(String username);
 
 }
