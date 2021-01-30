@@ -19,13 +19,22 @@ public class AuthServer {
 
     private Selector selector;
     private ByteBuffer buffer;
+
     private boolean isRunning;
 
-    public AuthServer() {
+    private final RequestHandler requestHandler;
+
+
+    public AuthServer(final RequestHandler requestHandler) {
+        this.requestHandler = requestHandler;
         this.isRunning = false;
     }
 
     public void start() {
+        if (isRunning) {
+            return;
+        }
+
         try(ServerSocketChannel serverSocketChannel = ServerSocketChannel.open()) {
             serverSocketChannel.bind(new InetSocketAddress(HOST, PORT));
             serverSocketChannel.configureBlocking(false);
@@ -71,7 +80,6 @@ public class AuthServer {
 
             while (keyIterator.hasNext()) {
                 final SelectionKey key = keyIterator.next();
-
                 if (key.isAcceptable()) {
                     acceptClient((ServerSocketChannel) key.channel());
                 } else if (key.isReadable()) {
@@ -96,6 +104,7 @@ public class AuthServer {
             if (request == null) {
                 return;
             }
+            requestHandler.handle(request);
             response = "TODO";
         } catch (IOException readIoException) {
             response = "Failed to read and process your request. Please try again later.";
@@ -136,7 +145,7 @@ public class AuthServer {
     }
 
     public static void main(String[] args) {
-        AuthServer authServer = new AuthServer();
+        AuthServer authServer = new AuthServer(null);
         authServer.start();
     }
 
