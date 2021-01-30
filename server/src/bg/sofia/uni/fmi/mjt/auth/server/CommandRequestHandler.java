@@ -4,7 +4,7 @@ import bg.sofia.uni.fmi.mjt.auth.server.command.Command;
 import bg.sofia.uni.fmi.mjt.auth.server.command.parser.CommandParseException;
 import bg.sofia.uni.fmi.mjt.auth.server.command.parser.CommandParser;
 import bg.sofia.uni.fmi.mjt.auth.server.command.parser.ParsedCommand;
-import bg.sofia.uni.fmi.mjt.auth.server.command.parser.SpaceCommandParser;
+import bg.sofia.uni.fmi.mjt.auth.server.command.parser.NameArgsCommandParser;
 import bg.sofia.uni.fmi.mjt.auth.server.command.validator.CommandValidator;
 import bg.sofia.uni.fmi.mjt.auth.server.command.validator.InvalidCommandException;
 import bg.sofia.uni.fmi.mjt.auth.server.command.validator.ParsedCommandValidator;
@@ -18,7 +18,7 @@ public class CommandRequestHandler implements RequestHandler {
     private final Map<String, Command> commands;
 
     public CommandRequestHandler(final ParsedCommandValidator parsedCommandValidator,
-                                 final SpaceCommandParser commandParser,
+                                 final NameArgsCommandParser commandParser,
                                  final Map<String, Command> commands) {
 
         this.parsedCommandValidator = parsedCommandValidator;

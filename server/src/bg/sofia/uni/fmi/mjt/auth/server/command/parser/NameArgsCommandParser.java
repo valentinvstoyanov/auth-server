@@ -3,7 +3,7 @@ package bg.sofia.uni.fmi.mjt.auth.server.command.parser;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SpaceCommandParser implements CommandParser {
+public class NameArgsCommandParser implements CommandParser {
 
     private static final String DELIM = " ";
     private static final String MISSING_ARG_VALUE_FORMAT = "Missing value for %s argument.";
