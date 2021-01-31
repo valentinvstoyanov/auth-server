@@ -1,5 +1,8 @@
 package bg.sofia.uni.fmi.mjt.auth.server;
 
+import bg.sofia.uni.fmi.mjt.auth.server.command.Command;
+import bg.sofia.uni.fmi.mjt.auth.server.command.RegisterCommand;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -8,7 +11,9 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 public class AuthServer {
@@ -104,8 +109,7 @@ public class AuthServer {
             if (request == null) {
                 return;
             }
-            requestHandler.handle(request);
-            response = "TODO";
+            response = requestHandler.handle(request);
         } catch (IOException readIoException) {
             response = "Failed to read and process your request. Please try again later.";
             System.out.println("Failed to read client request: " + readIoException.getMessage());

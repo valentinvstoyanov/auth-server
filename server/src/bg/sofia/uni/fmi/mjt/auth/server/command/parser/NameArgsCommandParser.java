@@ -7,12 +7,14 @@ public class NameArgsCommandParser implements CommandParser {
 
     private static final String DELIM = " ";
     private static final String MISSING_ARG_VALUE_FORMAT = "Missing value for %s argument.";
-    private static final String MISSING_ARGUMENTS_MESSAGE = "Missing arguments";
+    public static final int NAME_INDEX = 0;
+    public static final int ARGS_INDEX = 1;
+    public static final int COMMAND_PARTS = 2;
 
     public ParsedCommand parse(final String commandStr) throws CommandParseException {
-        final String[] nameArgs = commandStr.split(DELIM, 2);
-        final String name = nameArgs[0];
-        final String argsStr = nameArgs.length == 2 ? nameArgs[1] : null;
+        final String[] nameArgs = commandStr.split(DELIM, COMMAND_PARTS);
+        final String name = nameArgs[NAME_INDEX];
+        final String argsStr = nameArgs.length == COMMAND_PARTS ? nameArgs[ARGS_INDEX] : null;
         final Map<String, String> args = parseArgs(argsStr);
         return new ParsedCommand(name, args);
     }
