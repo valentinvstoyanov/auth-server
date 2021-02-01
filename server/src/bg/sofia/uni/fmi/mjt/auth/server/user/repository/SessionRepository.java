@@ -1,15 +1,15 @@
 package bg.sofia.uni.fmi.mjt.auth.server.user.repository;
 
-import bg.sofia.uni.fmi.mjt.auth.server.user.model.Session;
+import bg.sofia.uni.fmi.mjt.auth.server.session.model.Session;
 
 public interface SessionRepository {
 
-    String create(String username);
+    String createSession(String username);
 
-    Session getById(String sessionId);
+    Session getSessionById(String sessionId);
 
-    boolean deleteById(String sessionId);
+    boolean deleteSessionById(String sessionId);
 
-    String getUsernameById(String sessionId);
+    String getUsernameByIdSession(String sessionId);
 
 }

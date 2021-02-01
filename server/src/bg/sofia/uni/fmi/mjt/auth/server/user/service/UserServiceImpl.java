@@ -2,15 +2,13 @@ package bg.sofia.uni.fmi.mjt.auth.server.user.service;
 
 import bg.sofia.uni.fmi.mjt.auth.server.user.encoder.PasswordEncoder;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUsernamePasswordCombination;
-import bg.sofia.uni.fmi.mjt.auth.server.user.model.Session;
+import bg.sofia.uni.fmi.mjt.auth.server.session.model.Session;
 import bg.sofia.uni.fmi.mjt.auth.server.user.validator.UserValidator;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUserDataException;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.UsernameAlreadyTakenException;
 import bg.sofia.uni.fmi.mjt.auth.server.user.model.User;
 import bg.sofia.uni.fmi.mjt.auth.server.user.repository.SessionRepository;
 import bg.sofia.uni.fmi.mjt.auth.server.user.repository.UserRepository;
-
-import java.time.LocalDateTime;
 
 public class UserServiceImpl implements UserService {
 
@@ -41,7 +39,7 @@ public class UserServiceImpl implements UserService {
         final String encodedPassword = passwordEncoder.encode(password);
         final User user = new User(username, encodedPassword, firstName, lastName, email);
         userRepository.create(user);
-        return sessionRepository.create(username);
+        return sessionRepository.createSession(username);
     }
 
     @Override
@@ -55,18 +53,18 @@ public class UserServiceImpl implements UserService {
             throw new InvalidUsernamePasswordCombination();
         }
 
-        return sessionRepository.create(username);
+        return sessionRepository.createSession(username);
     }
 
     @Override
     public String login(final String sessionId) {
-        final Session session = sessionRepository.getById(sessionId);
+        final Session session = sessionRepository.getSessionById(sessionId);
         return session != null ? session.id() : null;
     }
 
     @Override
     public boolean logout(final String sessionId) {
-        return sessionRepository.deleteById(sessionId);
+        return sessionRepository.deleteSessionById(sessionId);
     }
 
     @Override
@@ -76,7 +74,7 @@ public class UserServiceImpl implements UserService {
 
         userValidator.validate(username, password, firstName, lastName, email);
 
-        final String oldUsername = sessionRepository.getUsernameById(sessionId);
+        final String oldUsername = sessionRepository.getUsernameByIdSession(sessionId);
         if (!oldUsername.equals(username) && userRepository.getByUsername(username) != null) {
             throw new UsernameAlreadyTakenException(username);
         }

@@ -4,7 +4,7 @@ import bg.sofia.uni.fmi.mjt.auth.server.user.encoder.PasswordEncoder;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUserDataException;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUsernamePasswordCombination;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.UsernameAlreadyTakenException;
-import bg.sofia.uni.fmi.mjt.auth.server.user.model.Session;
+import bg.sofia.uni.fmi.mjt.auth.server.session.model.Session;
 import bg.sofia.uni.fmi.mjt.auth.server.user.model.User;
 import bg.sofia.uni.fmi.mjt.auth.server.user.repository.SessionRepository;
 import bg.sofia.uni.fmi.mjt.auth.server.user.repository.UserRepository;
@@ -14,6 +14,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import java.time.LocalDateTime;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -26,7 +28,7 @@ import static org.mockito.Mockito.when;
 public class UserServiceImplTest {
 
     private static final String TEST_SESSION_ID = "testSessionId";
-    private static final Session TEST_SESSION = new Session(TEST_SESSION_ID);
+    private static final Session TEST_SESSION = new Session(TEST_SESSION_ID, LocalDateTime.now());
 
     private static final String TEST_USERNAME = "testUsername";
     private static final String TEST_PASSWORD = "testPassword";
@@ -113,7 +115,7 @@ public class UserServiceImplTest {
     @Test
     public void testRegisterReturnsCorrectSessionId() throws UsernameAlreadyTakenException, InvalidUserDataException {
         when(userRepositoryMock.getByUsername(TEST_USERNAME)).thenReturn(null);
-        when(sessionRepositoryMock.create(TEST_USERNAME)).thenReturn(TEST_SESSION_ID);
+        when(sessionRepositoryMock.createSession(TEST_USERNAME)).thenReturn(TEST_SESSION_ID);
         when(passwordEncoderMock.encode(TEST_PASSWORD)).thenReturn(TEST_PASSWORD);
 
         final String actual =
@@ -121,7 +123,7 @@ public class UserServiceImplTest {
 
         assertEquals("should return test session id", TEST_SESSION_ID, actual);
 
-        verify(sessionRepositoryMock, times(1)).create(TEST_USERNAME);
+        verify(sessionRepositoryMock, times(1)).createSession(TEST_USERNAME);
         verify(userRepositoryMock, times(1)).getByUsername(TEST_USERNAME);
         verify(userRepositoryMock, times(1)).create(TEST_USER);
     }
@@ -171,18 +173,18 @@ public class UserServiceImplTest {
 
         when(userRepositoryMock.getByUsername(TEST_USERNAME)).thenReturn(TEST_USER);
         when(passwordEncoderMock.match(TEST_PASSWORD, TEST_PASSWORD)).thenReturn(true);
-        when(sessionRepositoryMock.create(TEST_USERNAME)).thenReturn(TEST_SESSION_ID);
+        when(sessionRepositoryMock.createSession(TEST_USERNAME)).thenReturn(TEST_SESSION_ID);
 
         final String actual = userService.login(TEST_USERNAME, TEST_PASSWORD);
         assertEquals("should return test session id", TEST_SESSION_ID, actual);
 
-        verify(sessionRepositoryMock, times(1)).create(TEST_USERNAME);
+        verify(sessionRepositoryMock, times(1)).createSession(TEST_USERNAME);
         verify(userRepositoryMock, times(1)).getByUsername(TEST_USERNAME);
     }
 
     @Test
     public void testLoginWithSessionIdReturnsNullWhenThereIsNoSuchSession() {
-        when(sessionRepositoryMock.getById(TEST_SESSION_ID)).thenReturn(null);
+        when(sessionRepositoryMock.getSessionById(TEST_SESSION_ID)).thenReturn(null);
 
         final String actual = userService.login(TEST_SESSION_ID);
         assertNull("should return null", actual);
@@ -190,7 +192,7 @@ public class UserServiceImplTest {
 
     @Test
     public void testLoginWithSessionIdReturnsSessionIdWhenThereIsSuchSession() {
-        when(sessionRepositoryMock.getById(TEST_SESSION_ID)).thenReturn(TEST_SESSION);
+        when(sessionRepositoryMock.getSessionById(TEST_SESSION_ID)).thenReturn(TEST_SESSION);
 
         final String actual = userService.login(TEST_SESSION_ID);
         assertEquals("should return test session id", TEST_SESSION_ID, actual);
@@ -252,13 +254,13 @@ public class UserServiceImplTest {
             throws UsernameAlreadyTakenException, InvalidUserDataException {
 
         when(userRepositoryMock.getByUsername(TEST_USERNAME)).thenReturn(TEST_USER);
-        when(sessionRepositoryMock.getUsernameById(TEST_SESSION_ID)).thenReturn(TEST_USERNAME + "1");
+        when(sessionRepositoryMock.getUsernameByIdSession(TEST_SESSION_ID)).thenReturn(TEST_USERNAME + "1");
         userService.update(TEST_SESSION_ID, TEST_USERNAME, TEST_PASSWORD, TEST_FIRST_NAME, TEST_LAST_NAME, TEST_EMAIL);
     }
 
     @Test
     public void testUpdateWithoutUsernameChange() throws InvalidUserDataException, UsernameAlreadyTakenException {
-        when(sessionRepositoryMock.getUsernameById(TEST_SESSION_ID)).thenReturn(TEST_USERNAME);
+        when(sessionRepositoryMock.getUsernameByIdSession(TEST_SESSION_ID)).thenReturn(TEST_USERNAME);
         when(passwordEncoderMock.encode(TEST_PASSWORD)).thenReturn(TEST_PASSWORD);
 
         userService.update(TEST_SESSION_ID, TEST_USERNAME, TEST_PASSWORD, TEST_FIRST_NAME, TEST_LAST_NAME, TEST_EMAIL);
@@ -271,7 +273,7 @@ public class UserServiceImplTest {
         final String newUsername = oldUsername + "1";
         final var newUser = new User(newUsername, TEST_PASSWORD, TEST_FIRST_NAME, TEST_LAST_NAME, TEST_EMAIL);
 
-        when(sessionRepositoryMock.getUsernameById(TEST_SESSION_ID)).thenReturn(oldUsername);
+        when(sessionRepositoryMock.getUsernameByIdSession(TEST_SESSION_ID)).thenReturn(oldUsername);
         when(passwordEncoderMock.encode(TEST_PASSWORD)).thenReturn(TEST_PASSWORD);
         when(userRepositoryMock.getByUsername(newUsername)).thenReturn(null);
 

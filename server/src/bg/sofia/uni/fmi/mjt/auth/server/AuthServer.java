@@ -1,8 +1,5 @@
 package bg.sofia.uni.fmi.mjt.auth.server;
 
-import bg.sofia.uni.fmi.mjt.auth.server.command.Command;
-import bg.sofia.uni.fmi.mjt.auth.server.command.RegisterCommand;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -11,9 +8,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 public class AuthServer {
@@ -148,9 +143,7 @@ public class AuthServer {
         }
     }
 
-    public static void main(String[] args) {
-        AuthServer authServer = new AuthServer(null);
-        authServer.start();
+    public static void main(String[] args) throws IOException {
     }
 
 }
