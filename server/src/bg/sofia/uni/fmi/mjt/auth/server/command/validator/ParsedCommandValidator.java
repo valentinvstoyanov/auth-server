@@ -14,12 +14,12 @@ public class ParsedCommandValidator implements CommandValidator {
     //TODO: provide proper exception messages
     public void validate(final ParsedCommand parsedCommand, final Command command) throws InvalidCommandException {
         if (command == null) {
-            throw new InvalidCommandException("");
+            throw new InvalidCommandException("1");
         }
 
         if (parsedCommand.args() == null) {
             if (command.hasRequiredArgs()) {
-                throw new InvalidCommandException("");
+                throw new InvalidCommandException("2");
             } else {
                 return;
             }
@@ -31,13 +31,13 @@ public class ParsedCommandValidator implements CommandValidator {
                 final Set<String> parsedOptionalArgs = new HashSet<>(parsedArgs);
                 parsedOptionalArgs.removeAll(command.requiredArgs());
                 if (!(parsedArgs.containsAll(command.requiredArgs()) && command.optionalArgs().containsAll(parsedOptionalArgs))) {
-                    throw new InvalidCommandException("");
+                    throw new InvalidCommandException("3");
                 }
             } else if (!parsedArgs.equals(command.requiredArgs())){
-                throw new InvalidCommandException("");
+                throw new InvalidCommandException("4");
             }
         } else if (command.hasOptionalArgs() && !command.optionalArgs().containsAll(parsedArgs)) {
-            throw new InvalidCommandException("");
+            throw new InvalidCommandException("5");
         } else {
             throw new InvalidCommandException(String.format(COMMAND_EXPECTS_NO_ARGS_FORMAT, command.name()));
         }

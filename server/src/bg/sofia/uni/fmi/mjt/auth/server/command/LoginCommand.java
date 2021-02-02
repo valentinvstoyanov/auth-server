@@ -8,8 +8,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
-import static bg.sofia.uni.fmi.mjt.auth.server.command.CommonArgs.PASSWORD_ARG;
-import static bg.sofia.uni.fmi.mjt.auth.server.command.CommonArgs.USERNAME_ARG;
+import static bg.sofia.uni.fmi.mjt.auth.server.command.CommonArgs.PASSWORD;
+import static bg.sofia.uni.fmi.mjt.auth.server.command.CommonArgs.USERNAME;
 
 public class LoginCommand extends Command {
 
@@ -24,7 +24,7 @@ public class LoginCommand extends Command {
 
     @Override
     public Set<String> requiredArgs() {
-        return Set.of(USERNAME_ARG.name(), PASSWORD_ARG.name());
+        return Set.of(USERNAME.argName, PASSWORD.argName);
     }
 
     @Override
@@ -34,8 +34,8 @@ public class LoginCommand extends Command {
 
     @Override
     public String execute(final Map<String, String> args) {
-        final String username = args.get(USERNAME_ARG.name());
-        final String password = args.get(PASSWORD_ARG.name());
+        final String username = args.get(USERNAME.argName);
+        final String password = args.get(PASSWORD.argName);
         try {
             return userService.login(username, password);
         } catch (InvalidUserDataException | InvalidUsernamePasswordCombination | IOException e) {

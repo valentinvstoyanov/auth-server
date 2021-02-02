@@ -1,16 +1,16 @@
 package bg.sofia.uni.fmi.mjt.auth.server.command;
 
 public enum CommonArgs {
-    USERNAME_ARG("-username"),
-    PASSWORD_ARG("-password"),
-    FIRST_NAME_ARG("-first-name"),
-    LAST_NAME_ARG("-last-name"),
-    EMAIL_ARG("-email"),
+    USERNAME("-username"),
+    PASSWORD("-password"),
+    FIRST_NAME("-first-name"),
+    LAST_NAME("-last-name"),
+    EMAIL("-email"),
     SESSION_ID_ARG("-session-id");
 
-    private final String name;
+    public final String argName;
 
-    CommonArgs(final String name) {
-        this.name = name;
+    CommonArgs(final String argName) {
+        this.argName = argName;
     }
 }
