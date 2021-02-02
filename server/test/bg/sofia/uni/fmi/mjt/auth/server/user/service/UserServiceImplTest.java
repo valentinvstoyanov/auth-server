@@ -32,7 +32,9 @@ public class UserServiceImplTest {
     private static final Session TEST_SESSION = new Session(TEST_SESSION_ID, LocalDateTime.now());
 
     private static final String TEST_USERNAME = "testUsername";
+    private static final String TEST_USERNAME1 = TEST_USERNAME + "1";
     private static final String TEST_PASSWORD = "testPassword";
+    private static final String TEST_OLD_PASSWORD = "testOldPassword";
     private static final String TEST_FIRST_NAME = "testFirstName";
     private static final String TEST_LAST_NAME = "testLastName";
     private static final String TEST_EMAIL = "testEmail";
@@ -201,86 +203,106 @@ public class UserServiceImplTest {
         assertEquals("should return test session id", TEST_SESSION_ID, actual);
     }
 
-    private void testUpdateWithInvalidData(final String sessionId, final String username, final String password,
-                                           final String firstName, final String lastName, final String email)
-            throws InvalidUserDataException, UsernameAlreadyTakenException, IOException {
+    private void testUpdateWithInvalidData(final String sessionId, final String username, final String oldPassword,
+                                           final String newPassword, final String firstName, final String lastName,
+                                           final String email)
+            throws InvalidUserDataException, UsernameAlreadyTakenException, IOException, InvalidUsernamePasswordCombination {
 
-        doThrow(InvalidUserDataException.class)
-                .when(userValidatorMock)
-                .validate(username, password, firstName, lastName, email);
+        if (oldPassword == null) {
+            doThrow(InvalidUserDataException.class)
+                    .when(userValidatorMock)
+                    .validate(username, firstName, lastName, email);
+        } else {
+            doThrow(InvalidUserDataException.class)
+                    .when(userValidatorMock)
+                    .validate(username, newPassword, firstName, lastName, email);
+        }
 
-        userService.update(sessionId, username, password, firstName, lastName, email);
+        userService.update(sessionId, username, firstName, lastName, email, oldPassword, newPassword);
     }
 
     @Test(expected = InvalidUserDataException.class)
     public void testUpdateUserDataThrowsWhenUsernameIsNotValid()
-            throws InvalidUserDataException, UsernameAlreadyTakenException, IOException {
+            throws InvalidUserDataException, UsernameAlreadyTakenException, IOException, InvalidUsernamePasswordCombination {
 
-        testUpdateWithInvalidData(TEST_SESSION_ID, "", TEST_PASSWORD, TEST_FIRST_NAME, TEST_LAST_NAME,
-                TEST_EMAIL);
+        final String invalidUsername = "";
+        when(sessionServiceMock.getUsernameBySessionId(TEST_SESSION_ID)).thenReturn(TEST_USERNAME);
+        when(userRepositoryMock.getByUsername(TEST_USERNAME)).thenReturn(TEST_USER);
+        testUpdateWithInvalidData(TEST_SESSION_ID, invalidUsername,
+                null, null, TEST_FIRST_NAME, TEST_LAST_NAME, TEST_EMAIL);
     }
 
     @Test(expected = InvalidUserDataException.class)
     public void testUpdateUserDataThrowsWhenPasswordIsNotValid()
-            throws InvalidUserDataException, UsernameAlreadyTakenException, IOException {
+            throws InvalidUserDataException, UsernameAlreadyTakenException, IOException, InvalidUsernamePasswordCombination {
 
-        testUpdateWithInvalidData(TEST_SESSION_ID, TEST_USERNAME, "", TEST_FIRST_NAME, TEST_LAST_NAME,
-                TEST_EMAIL);
+        when(sessionServiceMock.getUsernameBySessionId(TEST_SESSION_ID)).thenReturn(TEST_USERNAME);
+        when(userRepositoryMock.getByUsername(TEST_USERNAME)).thenReturn(TEST_USER);
+        testUpdateWithInvalidData(TEST_SESSION_ID, TEST_USERNAME, TEST_PASSWORD, "", TEST_FIRST_NAME,
+                TEST_LAST_NAME, TEST_EMAIL);
     }
 
     @Test(expected = InvalidUserDataException.class)
     public void testUpdateUserDataThrowsWhenFirstNameIsNotValid()
-            throws InvalidUserDataException, UsernameAlreadyTakenException, IOException {
+            throws InvalidUserDataException, UsernameAlreadyTakenException, IOException, InvalidUsernamePasswordCombination {
 
-        testUpdateWithInvalidData(TEST_SESSION_ID, TEST_USERNAME, TEST_PASSWORD, "", TEST_LAST_NAME,
-                TEST_EMAIL);
+        when(sessionServiceMock.getUsernameBySessionId(TEST_SESSION_ID)).thenReturn(TEST_USERNAME);
+        when(userRepositoryMock.getByUsername(TEST_USERNAME)).thenReturn(TEST_USER);
+        testUpdateWithInvalidData(TEST_SESSION_ID, TEST_USERNAME, null, null, "",
+                TEST_LAST_NAME, TEST_EMAIL);
     }
 
     @Test(expected = InvalidUserDataException.class)
     public void testUpdateUserDataThrowsWhenLastNameIsNotValid()
-            throws InvalidUserDataException, UsernameAlreadyTakenException, IOException {
+            throws InvalidUserDataException, UsernameAlreadyTakenException, IOException, InvalidUsernamePasswordCombination {
 
-        testUpdateWithInvalidData(TEST_SESSION_ID, TEST_USERNAME, TEST_PASSWORD, TEST_FIRST_NAME, "",
-                TEST_EMAIL);
+        when(sessionServiceMock.getUsernameBySessionId(TEST_SESSION_ID)).thenReturn(TEST_USERNAME);
+        when(userRepositoryMock.getByUsername(TEST_USERNAME)).thenReturn(TEST_USER);
+        testUpdateWithInvalidData(TEST_SESSION_ID, TEST_USERNAME, null, null, TEST_FIRST_NAME,
+                "", TEST_EMAIL);
     }
 
     @Test(expected = InvalidUserDataException.class)
     public void testUpdateUserDataThrowsWhenEmailIsNotValid()
-            throws InvalidUserDataException, UsernameAlreadyTakenException, IOException {
+            throws InvalidUserDataException, UsernameAlreadyTakenException, IOException, InvalidUsernamePasswordCombination {
 
-        testUpdateWithInvalidData(TEST_SESSION_ID, TEST_USERNAME, TEST_PASSWORD, TEST_FIRST_NAME, TEST_LAST_NAME,
-                "");
+        when(sessionServiceMock.getUsernameBySessionId(TEST_SESSION_ID)).thenReturn(TEST_USERNAME);
+        when(userRepositoryMock.getByUsername(TEST_USERNAME)).thenReturn(TEST_USER);
+        testUpdateWithInvalidData(TEST_SESSION_ID, TEST_USERNAME, null, null, TEST_FIRST_NAME,
+                TEST_LAST_NAME, "");
     }
 
     @Test(expected = UsernameAlreadyTakenException.class)
     public void testUpdateThrowsWhenUsernameAlreadyTaken()
-            throws UsernameAlreadyTakenException, InvalidUserDataException, IOException {
+            throws UsernameAlreadyTakenException, InvalidUserDataException, IOException, InvalidUsernamePasswordCombination {
 
+        when(sessionServiceMock.getUsernameBySessionId(TEST_SESSION_ID)).thenReturn(TEST_USERNAME);
         when(userRepositoryMock.getByUsername(TEST_USERNAME)).thenReturn(TEST_USER);
-        when(sessionServiceMock.getUsernameBySessionId(TEST_SESSION_ID)).thenReturn(TEST_USERNAME + "1");
-        userService.update(TEST_SESSION_ID, TEST_USERNAME, TEST_PASSWORD, TEST_FIRST_NAME, TEST_LAST_NAME, TEST_EMAIL);
+        when(userRepositoryMock.getByUsername(TEST_USERNAME1)).thenReturn(TEST_USER);
+        userService.update(TEST_SESSION_ID, TEST_USERNAME1, null, null, TEST_FIRST_NAME,
+                TEST_LAST_NAME, TEST_EMAIL);
     }
 
     @Test
-    public void testUpdateWithoutUsernameChange() throws InvalidUserDataException, UsernameAlreadyTakenException, IOException {
+    public void testUpdateWithoutUsernameChange() throws InvalidUserDataException, UsernameAlreadyTakenException, IOException, InvalidUsernamePasswordCombination {
         when(sessionServiceMock.getUsernameBySessionId(TEST_SESSION_ID)).thenReturn(TEST_USERNAME);
-        when(passwordEncoderMock.encode(TEST_PASSWORD)).thenReturn(TEST_PASSWORD);
+        when(userRepositoryMock.getByUsername(TEST_USERNAME)).thenReturn(TEST_USER);
 
-        userService.update(TEST_SESSION_ID, TEST_USERNAME, TEST_PASSWORD, TEST_FIRST_NAME, TEST_LAST_NAME, TEST_EMAIL);
+        userService.update(TEST_SESSION_ID, TEST_USERNAME, TEST_FIRST_NAME, TEST_LAST_NAME, TEST_EMAIL, null, null);
         verify(userRepositoryMock, times(1)).update(TEST_USERNAME, TEST_USER);
     }
 
     @Test
-    public void testUpdateWithUsernameChange() throws InvalidUserDataException, UsernameAlreadyTakenException, IOException {
+    public void testUpdateWithUsernameChange() throws InvalidUserDataException, UsernameAlreadyTakenException, IOException, InvalidUsernamePasswordCombination {
         final String oldUsername = TEST_USERNAME;
         final String newUsername = oldUsername + "1";
         final var newUser = new User(newUsername, TEST_PASSWORD, TEST_FIRST_NAME, TEST_LAST_NAME, TEST_EMAIL);
 
         when(sessionServiceMock.getUsernameBySessionId(TEST_SESSION_ID)).thenReturn(oldUsername);
-        when(passwordEncoderMock.encode(TEST_PASSWORD)).thenReturn(TEST_PASSWORD);
+        when(userRepositoryMock.getByUsername(oldUsername)).thenReturn(TEST_USER);
         when(userRepositoryMock.getByUsername(newUsername)).thenReturn(null);
 
-        userService.update(TEST_SESSION_ID, newUsername, TEST_PASSWORD, TEST_FIRST_NAME, TEST_LAST_NAME, TEST_EMAIL);
+        userService.update(TEST_SESSION_ID, newUsername, TEST_FIRST_NAME, TEST_LAST_NAME, TEST_EMAIL, null, null);
         verify(userRepositoryMock, times(1)).update(oldUsername, newUser);
     }
 

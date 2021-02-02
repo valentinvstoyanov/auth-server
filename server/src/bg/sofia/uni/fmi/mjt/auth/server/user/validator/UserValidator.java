@@ -7,6 +7,9 @@ public interface UserValidator {
     void validate(String username, String password, String firstName, String lastName, String email)
             throws InvalidUserDataException;
 
+    void validate(String username, String firstName, String lastName, String email)
+            throws InvalidUserDataException;
+
     void validate(String username, String password) throws InvalidUserDataException;
 
 }

@@ -3,6 +3,7 @@ package bg.sofia.uni.fmi.mjt.auth.server.user.service;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUserDataException;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUsernamePasswordCombination;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.UsernameAlreadyTakenException;
+import bg.sofia.uni.fmi.mjt.auth.server.user.model.User;
 
 import java.io.IOException;
 
@@ -62,11 +63,19 @@ public interface UserService {
      *         <code>firstName</code>, <code>lastName</code> or <code>email</code> fails
      * @throws UsernameAlreadyTakenException If user with the same <code>username</code> is already exists
      */
-    void update(String sessionId, String username, String password, String firstName, String lastName, String email)
-            throws InvalidUserDataException, UsernameAlreadyTakenException, IOException;
+    void update(String sessionId,
+                String username,
+                String firstName,
+                String lastName,
+                String email,
+                String oldPassword,
+                String newPassword)
+            throws InvalidUserDataException, UsernameAlreadyTakenException, IOException, InvalidUsernamePasswordCombination;
 
     void addAdmin(String username);
     void removeAdmin(String username);
     void delete(String username);
+
+    User getByUsername(String username) throws IOException;
 
 }

@@ -1,8 +1,9 @@
 package bg.sofia.uni.fmi.mjt.auth.server;
 
 import bg.sofia.uni.fmi.mjt.auth.server.command.Command;
-import bg.sofia.uni.fmi.mjt.auth.server.command.LoginCommand;
-import bg.sofia.uni.fmi.mjt.auth.server.command.RegisterCommand;
+import bg.sofia.uni.fmi.mjt.auth.server.command.authenticated.UpdateUserCommand;
+import bg.sofia.uni.fmi.mjt.auth.server.command.unauthenticated.LoginCommand;
+import bg.sofia.uni.fmi.mjt.auth.server.command.unauthenticated.RegisterCommand;
 import bg.sofia.uni.fmi.mjt.auth.server.command.parser.CommandParser;
 import bg.sofia.uni.fmi.mjt.auth.server.command.parser.NameArgsCommandParser;
 import bg.sofia.uni.fmi.mjt.auth.server.command.validator.CommandValidator;
@@ -15,6 +16,8 @@ import bg.sofia.uni.fmi.mjt.auth.server.session.repository.SessionRepository;
 import bg.sofia.uni.fmi.mjt.auth.server.session.repository.SessionRepositoryImpl;
 import bg.sofia.uni.fmi.mjt.auth.server.session.repository.SessionSerializer;
 import bg.sofia.uni.fmi.mjt.auth.server.session.repository.UsernameSessionSerializer;
+import bg.sofia.uni.fmi.mjt.auth.server.session.service.CurrentSessionService;
+import bg.sofia.uni.fmi.mjt.auth.server.session.service.CurrentSessionServiceImpl;
 import bg.sofia.uni.fmi.mjt.auth.server.session.service.SessionService;
 import bg.sofia.uni.fmi.mjt.auth.server.session.service.SessionServiceImpl;
 import bg.sofia.uni.fmi.mjt.auth.server.storage.FileKeyValueStorage;
@@ -59,7 +62,7 @@ public class AuthServer {
     private boolean isRunning;
 
     private final RequestHandler requestHandler;
-
+    private SelectionKey currentSelectionKey;
 
     public AuthServer(final RequestHandler requestHandler) {
         this.requestHandler = requestHandler;
@@ -116,6 +119,8 @@ public class AuthServer {
 
             while (keyIterator.hasNext()) {
                 final SelectionKey key = keyIterator.next();
+                currentSelectionKey = key;
+
                 if (key.isAcceptable()) {
                     acceptClient((ServerSocketChannel) key.channel());
                 } else if (key.isReadable()) {
@@ -123,6 +128,7 @@ public class AuthServer {
                 }
 
                 keyIterator.remove();
+                currentSelectionKey = null;
             }
         }
     }
@@ -179,6 +185,10 @@ public class AuthServer {
         }
     }
 
+    public SelectionKey getCurrentSelectionKey() {
+        return currentSelectionKey;
+    }
+
     public static void main(String[] args) throws IOException {
         String userFileName = "test-users";
         String sessionFileName = "test-sessions";
@@ -208,16 +218,21 @@ public class AuthServer {
         UserRepository userRepository = new UserRepositoryImpl(userStore, userCache);
         UserService userService = new UserServiceImpl(userRepository, userValidator, sessionService, passwordEncoder);
 
-        Command loginCommand = new LoginCommand(userService);
-        Command registerCommand = new RegisterCommand(userService);
         Map<String, Command> commands = new HashMap<>();
-        commands.put(loginCommand.name(), loginCommand);
-        commands.put(registerCommand.name(), registerCommand);
 
         CommandValidator commandValidator = new ParsedCommandValidator();
         CommandParser commandParser = new NameArgsCommandParser();
         RequestHandler requestHandler = new CommandRequestHandler(commandValidator, commandParser, commands);
         AuthServer authServer = new AuthServer(requestHandler);
+
+        CurrentSessionService currentSessionService = new CurrentSessionServiceImpl(authServer::getCurrentSelectionKey);
+        Command loginCommand = new LoginCommand(userService, currentSessionService);
+        Command registerCommand = new RegisterCommand(userService, currentSessionService);
+        Command updateCommand = new UpdateUserCommand(currentSessionService, sessionService, userService);
+        commands.put(loginCommand.name(), loginCommand);
+        commands.put(registerCommand.name(), registerCommand);
+        commands.put(updateCommand.name(), updateCommand);
+        
         authServer.start();
     }
 

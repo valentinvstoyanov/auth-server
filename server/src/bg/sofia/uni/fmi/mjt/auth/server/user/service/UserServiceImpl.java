@@ -75,24 +75,53 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void update(final String sessionId, final String username, final String password, final String firstName,
-                       final String lastName, final String email)
-            throws InvalidUserDataException, UsernameAlreadyTakenException, IOException {
-
-        userValidator.validate(username, password, firstName, lastName, email);
+    public void update(final String sessionId,
+                       final String newUsername,
+                       final String newFirstName,
+                       final String newLastName,
+                       final String newEmail,
+                       final String oldPassword,
+                       final String newPassword)
+            throws InvalidUserDataException, UsernameAlreadyTakenException, IOException, InvalidUsernamePasswordCombination {
 
         final String oldUsername = sessionService.getUsernameBySessionId(sessionId);
-        if (!oldUsername.equals(username) && userRepository.getByUsername(username) != null) {
-            throw new UsernameAlreadyTakenException(username);
+        final User oldUser = userRepository.getByUsername(oldUsername);
+        final boolean usernameChange = newUsername != null && !oldUsername.equals(newUsername);
+        final boolean passwordChange = oldPassword != null && newPassword != null && !oldPassword.equals(newPassword);
+
+        if (passwordChange && passwordEncoder.match(oldPassword, oldUser.password())) {
+            throw new InvalidUsernamePasswordCombination();
         }
 
-        final String encodedPassword = passwordEncoder.encode(password);
-        final User user = new User(username, encodedPassword, firstName, lastName, email);
-        userRepository.update(oldUsername, user);
-
-        if (!oldUsername.equals(username)) {
-            sessionService.updateSessionUsername(sessionId, username);
+        if (usernameChange && userRepository.getByUsername(newUsername) != null) {
+            throw new UsernameAlreadyTakenException(newUsername);
         }
+
+        final String username = usernameChange ? newUsername : oldUsername;
+        final String firstName = newFirstName == null ? oldUser.firstName() : newFirstName;
+        final String lastName = newLastName == null ? oldUser.lastName() : newLastName;
+        final String email = newEmail == null ? oldUser.email() : newEmail;
+
+        String encodedPassword;
+        if (passwordChange) {
+            userValidator.validate(username, newPassword, firstName, lastName, email);
+            encodedPassword = passwordEncoder.encode(newPassword);
+        } else {
+            userValidator.validate(username, firstName, lastName, email);
+            encodedPassword = oldUser.password();
+        }
+
+        final User newUser = new User(username, encodedPassword, firstName, lastName, email);
+        userRepository.update(oldUsername, newUser);
+
+        if (usernameChange) {
+            sessionService.updateSessionUsername(sessionId, newUsername);
+        }
+    }
+
+    @Override
+    public User getByUsername(final String username) throws IOException {
+        return userRepository.getByUsername(username);
     }
 
     @Override

@@ -6,11 +6,17 @@ public enum CommonArgs {
     FIRST_NAME("-first-name"),
     LAST_NAME("-last-name"),
     EMAIL("-email"),
-    SESSION_ID_ARG("-session-id");
+    SESSION_ID("-session-id");
 
-    public final String argName;
+    private final String argName;
 
     CommonArgs(final String argName) {
         this.argName = argName;
     }
+
+    @Override
+    public String toString() {
+        return argName;
+    }
+
 }

@@ -16,6 +16,11 @@ public class UserValidatorImpl implements UserValidator {
     }
 
     @Override
+    public void validate(final String username, final String firstName, final String lastName, final String email) throws InvalidUserDataException {
+        //TODO
+    }
+
+    @Override
     public void validate(final String username, final String password) throws InvalidUserDataException {
         //TODO
     }
