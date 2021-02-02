@@ -12,11 +12,17 @@ public class SessionRepositoryImpl implements SessionRepository {
     private final KeyValueDataStore<String, UsernameSession> sessionCache;
 
     public SessionRepositoryImpl(final KeyValueDataStore<String, Session> usernameSessionStore,
-                                 final KeyValueDataStore<String, UsernameSession> sessionCache) {
+                                 final KeyValueDataStore<String, UsernameSession> sessionCache) throws IOException {
 
         this.usernameSessionStore = usernameSessionStore;
-        //TODO: init this using the upper
         this.sessionCache = sessionCache;
+        initSessionCache();
+    }
+
+    private void initSessionCache() throws IOException {
+        for (final var entry : usernameSessionStore.getAll().entrySet()) {
+            sessionCache.put(entry.getValue().id(), new UsernameSession(entry.getKey(), entry.getValue()));
+        }
     }
 
     @Override

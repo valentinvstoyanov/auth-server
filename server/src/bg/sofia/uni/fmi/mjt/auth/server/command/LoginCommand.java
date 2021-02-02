@@ -4,6 +4,7 @@ import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUserDataException;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUsernamePasswordCombination;
 import bg.sofia.uni.fmi.mjt.auth.server.user.service.UserService;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,7 +38,7 @@ public class LoginCommand extends Command {
         final String password = args.get(PASSWORD_ARG.name());
         try {
             return userService.login(username, password);
-        } catch (InvalidUserDataException | InvalidUsernamePasswordCombination e) {
+        } catch (InvalidUserDataException | InvalidUsernamePasswordCombination | IOException e) {
             return e.getMessage();
         }
     }

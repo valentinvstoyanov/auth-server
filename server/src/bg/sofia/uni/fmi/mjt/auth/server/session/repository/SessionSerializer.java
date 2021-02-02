@@ -3,10 +3,7 @@ package bg.sofia.uni.fmi.mjt.auth.server.session.repository;
 import bg.sofia.uni.fmi.mjt.auth.server.session.model.Session;
 import bg.sofia.uni.fmi.mjt.auth.server.storage.Serializer;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 
 public class SessionSerializer implements Serializer<Session> {
 
@@ -17,18 +14,14 @@ public class SessionSerializer implements Serializer<Session> {
 
     @Override
     public String serialize(final Session session) {
-        final ZonedDateTime zonedDateTime = ZonedDateTime.of(session.expirationDateTime(), ZoneId.systemDefault());
-        return session.id() + FIELD_DELIM + zonedDateTime.toInstant().toEpochMilli();
+        return session.id() + FIELD_DELIM + session.expirationDateTime().toString();
     }
 
     @Override
     public Session deserialize(final String str) {
         final String[] sessionIdWithExpiration = str.split(FIELD_DELIM, FIELD_COUNT);
         final String sessionId = sessionIdWithExpiration[SESSION_ID_INDEX];
-        final long expirationMillis = Long.parseLong(sessionIdWithExpiration[EXPIRATION_INDEX]);
-        final LocalDateTime expirationDateTime = Instant.ofEpochMilli(expirationMillis)
-                .atZone(ZoneId.systemDefault())
-                .toLocalDateTime();
+        final LocalDateTime expirationDateTime = LocalDateTime.parse(sessionIdWithExpiration[EXPIRATION_INDEX]);
         return new Session(sessionId, expirationDateTime);
     }
 

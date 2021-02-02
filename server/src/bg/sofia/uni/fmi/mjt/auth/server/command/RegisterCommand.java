@@ -4,6 +4,7 @@ import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUserDataException;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.UsernameAlreadyTakenException;
 import bg.sofia.uni.fmi.mjt.auth.server.user.service.UserService;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
@@ -47,7 +48,7 @@ public class RegisterCommand extends Command {
         final String email = args.get(EMAIL_ARG.name());
         try {
             return userService.register(username, password, firstName, lastName, email);
-        } catch (UsernameAlreadyTakenException | InvalidUserDataException e) {
+        } catch (UsernameAlreadyTakenException | InvalidUserDataException | IOException e) {
             return e.getMessage();
         }
     }

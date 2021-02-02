@@ -4,6 +4,8 @@ import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUserDataException;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUsernamePasswordCombination;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.UsernameAlreadyTakenException;
 
+import java.io.IOException;
+
 public interface UserService {
 
     /**
@@ -19,7 +21,7 @@ public interface UserService {
      *         <code>firstName</code>, <code>lastName</code> or <code>email</code> fails
      */
     String register(String username, String password, String firstName, String lastName, String email)
-            throws UsernameAlreadyTakenException, InvalidUserDataException;
+            throws UsernameAlreadyTakenException, InvalidUserDataException, IOException;
 
     /**
      * Logs the user in with the provided <code>username</code> and <code>password</code>.
@@ -32,21 +34,21 @@ public interface UserService {
      * @throws InvalidUsernamePasswordCombination If no user is registered user with <code>username</code> or cannot
      *         match <code>password</code> against the password of the registered user
      */
-    String login(String username, String password) throws InvalidUserDataException, InvalidUsernamePasswordCombination;
+    String login(String username, String password) throws InvalidUserDataException, InvalidUsernamePasswordCombination, IOException;
 
     /**
      * Returns the <code>sessionId</code> if it is associated with a session.
      * @param sessionId string specifying the session to look for
      * @return <code>sessionId</code> if session with such id exists, null otherwise
      */
-    String login(String sessionId);
+    String login(String sessionId) throws IOException;
 
     /**
      * Invalidates the session associate with <code>sessionId</code>
      * @param sessionId string specifying the session to be invalidated
      * @return true if there is such session and it is invalidated, false otherwise
      */
-    boolean logout(String sessionId);
+    boolean logout(String sessionId) throws IOException;
 
     /**
      * Updates the user data
@@ -61,7 +63,7 @@ public interface UserService {
      * @throws UsernameAlreadyTakenException If user with the same <code>username</code> is already exists
      */
     void update(String sessionId, String username, String password, String firstName, String lastName, String email)
-            throws InvalidUserDataException, UsernameAlreadyTakenException;
+            throws InvalidUserDataException, UsernameAlreadyTakenException, IOException;
 
     void addAdmin(String username);
     void removeAdmin(String username);
