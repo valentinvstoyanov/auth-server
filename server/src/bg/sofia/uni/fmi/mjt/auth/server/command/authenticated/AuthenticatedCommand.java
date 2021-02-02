@@ -30,7 +30,8 @@ public abstract class AuthenticatedCommand extends Command {
 
     @Override
     public final Set<String> requiredArgs() {
-        Set<String> args = new HashSet<>(otherRequiredArgs());
+        final Set<String> otherRequiredArgs = otherRequiredArgs();
+        Set<String> args = otherRequiredArgs == null ? new HashSet<>() : new HashSet<>(otherRequiredArgs);
         args.add(SESSION_ID.toString());
         return args;
     }

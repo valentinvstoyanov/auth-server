@@ -38,8 +38,8 @@ public class SessionRepositoryImpl implements SessionRepository {
 
     @Override
     public Session deleteSessionById(final String sessionId) throws IOException {
-        sessionCache.deleteByKey(sessionId);
-        return usernameSessionStore.deleteByKey(sessionId);
+        final UsernameSession usernameSession = sessionCache.deleteByKey(sessionId);
+        return usernameSessionStore.deleteByKey(usernameSession.username());
     }
 
     @Override

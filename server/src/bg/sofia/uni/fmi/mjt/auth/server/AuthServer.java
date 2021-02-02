@@ -1,6 +1,7 @@
 package bg.sofia.uni.fmi.mjt.auth.server;
 
 import bg.sofia.uni.fmi.mjt.auth.server.command.Command;
+import bg.sofia.uni.fmi.mjt.auth.server.command.authenticated.LogoutCommand;
 import bg.sofia.uni.fmi.mjt.auth.server.command.authenticated.UpdatePasswordCommand;
 import bg.sofia.uni.fmi.mjt.auth.server.command.authenticated.UpdateUserCommand;
 import bg.sofia.uni.fmi.mjt.auth.server.command.unauthenticated.LoginCommand;
@@ -231,10 +232,13 @@ public class AuthServer {
         Command registerCommand = new RegisterCommand(userService, currentSessionService);
         Command updateCommand = new UpdateUserCommand(currentSessionService, sessionService, userService);
         Command resetCommand = new UpdatePasswordCommand(currentSessionService, sessionService, userService);
+        Command logoutCommand = new LogoutCommand(currentSessionService, sessionService, userService);
+
         commands.put(loginCommand.name(), loginCommand);
         commands.put(registerCommand.name(), registerCommand);
         commands.put(updateCommand.name(), updateCommand);
         commands.put(resetCommand.name(), resetCommand);
+        commands.put(logoutCommand.name(), logoutCommand);
 
         authServer.start();
     }
