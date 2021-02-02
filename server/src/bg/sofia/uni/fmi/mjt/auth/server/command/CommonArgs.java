@@ -6,6 +6,8 @@ public enum CommonArgs {
     FIRST_NAME("-first-name"),
     LAST_NAME("-last-name"),
     EMAIL("-email"),
+    OLD_PASSWORD("-old-password"),
+    NEW_PASSWORD("-new-password"),
     SESSION_ID("-session-id");
 
     private final String argName;

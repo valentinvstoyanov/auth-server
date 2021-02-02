@@ -89,7 +89,7 @@ public class UserServiceImpl implements UserService {
         final boolean usernameChange = newUsername != null && !oldUsername.equals(newUsername);
         final boolean passwordChange = oldPassword != null && newPassword != null && !oldPassword.equals(newPassword);
 
-        if (passwordChange && passwordEncoder.match(oldPassword, oldUser.password())) {
+        if (passwordChange && !passwordEncoder.match(oldPassword, oldUser.password())) {
             throw new InvalidUsernamePasswordCombination();
         }
 
