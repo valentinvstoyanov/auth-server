@@ -194,6 +194,7 @@ public class AuthServer {
     public static void main(String[] args) throws IOException {
         String userFileName = "test-users";
         String sessionFileName = "test-sessions";
+
         Duration sessionDuration = Duration.ofDays(1);
 
         PasswordEncoder passwordEncoder = new IdentityPasswordEncoder();

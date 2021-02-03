@@ -46,6 +46,7 @@ public abstract class AuthenticatedCommand extends Command {
 
         try {
             if (sessionService.getUsernameBySessionId(currentSessionId) == null) {
+                currentSessionService.set(null);
                 return EXPIRED_SESSION;
             }
             return authenticatedExecute(args);

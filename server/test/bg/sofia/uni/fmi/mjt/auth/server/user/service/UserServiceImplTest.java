@@ -208,7 +208,7 @@ public class UserServiceImplTest {
                                            final String email)
             throws InvalidUserDataException, UsernameAlreadyTakenException, IOException, InvalidUsernamePasswordCombination {
 
-        if (oldPassword == null) {
+        if (oldPassword == null && newPassword == null) {
             doThrow(InvalidUserDataException.class)
                     .when(userValidatorMock)
                     .validate(username, firstName, lastName, email);
@@ -238,6 +238,7 @@ public class UserServiceImplTest {
 
         when(sessionServiceMock.getUsernameBySessionId(TEST_SESSION_ID)).thenReturn(TEST_USERNAME);
         when(userRepositoryMock.getByUsername(TEST_USERNAME)).thenReturn(TEST_USER);
+        when(passwordEncoderMock.match(TEST_PASSWORD, TEST_PASSWORD)).thenReturn(true);
         testUpdateWithInvalidData(TEST_SESSION_ID, TEST_USERNAME, TEST_PASSWORD, "", TEST_FIRST_NAME,
                 TEST_LAST_NAME, TEST_EMAIL);
     }
@@ -279,8 +280,8 @@ public class UserServiceImplTest {
         when(sessionServiceMock.getUsernameBySessionId(TEST_SESSION_ID)).thenReturn(TEST_USERNAME);
         when(userRepositoryMock.getByUsername(TEST_USERNAME)).thenReturn(TEST_USER);
         when(userRepositoryMock.getByUsername(TEST_USERNAME1)).thenReturn(TEST_USER);
-        userService.update(TEST_SESSION_ID, TEST_USERNAME1, null, null, TEST_FIRST_NAME,
-                TEST_LAST_NAME, TEST_EMAIL);
+        userService.update(TEST_SESSION_ID, TEST_USERNAME1, TEST_FIRST_NAME,
+                TEST_LAST_NAME, TEST_EMAIL, null, null);
     }
 
     @Test

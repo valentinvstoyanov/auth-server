@@ -21,6 +21,7 @@ public class UpdateUserCommand extends AuthenticatedCommand {
 
     public static final String NAME = "update";
     private static final String SUCCESSFULLY_UPDATED = "User successfully updated.";
+    private static final String NOTHING_TO_UPDATE = "Nothing to update.";
 
     private final UserService userService;
 
@@ -48,6 +49,9 @@ public class UpdateUserCommand extends AuthenticatedCommand {
 
     @Override
     protected String authenticatedExecute(final Map<String, String> args) {
+        if (args.isEmpty()) {
+            return NOTHING_TO_UPDATE;
+        }
         try {
             final String sessionId = currentSessionService.get();
             final String username = args.get(USERNAME.toString());

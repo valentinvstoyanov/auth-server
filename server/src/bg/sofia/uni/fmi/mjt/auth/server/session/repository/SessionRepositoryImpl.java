@@ -44,7 +44,8 @@ public class SessionRepositoryImpl implements SessionRepository {
 
     @Override
     public String getUsernameByIdSession(final String sessionId) throws IOException {
-        return sessionCache.getByKey(sessionId).username();
+        final UsernameSession usernameSession = sessionCache.getByKey(sessionId);
+        return usernameSession == null ? null : usernameSession.username();
     }
 
 }
