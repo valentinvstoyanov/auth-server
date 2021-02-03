@@ -1,7 +1,7 @@
-package bg.sofia.uni.fmi.mjt.auth.server.command.unauthenticated;
+package bg.sofia.uni.fmi.mjt.auth.server.command.types.unauthenticated;
 
 import bg.sofia.uni.fmi.mjt.auth.server.command.Command;
-import bg.sofia.uni.fmi.mjt.auth.server.session.service.CurrentSessionService;
+import bg.sofia.uni.fmi.mjt.auth.server.session.service.maybedelete.CurrentSessionService;
 
 import java.util.Map;
 

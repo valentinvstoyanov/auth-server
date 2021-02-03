@@ -1,4 +1,4 @@
-package bg.sofia.uni.fmi.mjt.auth.server.session.service;
+package bg.sofia.uni.fmi.mjt.auth.server.session.service.maybedelete;
 
 public interface CurrentSessionService {
 

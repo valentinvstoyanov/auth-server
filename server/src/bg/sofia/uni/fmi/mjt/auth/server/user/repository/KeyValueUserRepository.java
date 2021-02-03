@@ -1,17 +1,17 @@
 package bg.sofia.uni.fmi.mjt.auth.server.user.repository;
 
-import bg.sofia.uni.fmi.mjt.auth.server.storage.KeyValueDataStore;
+import bg.sofia.uni.fmi.mjt.auth.server.storage.keyvalue.KeyValueDataStore;
 import bg.sofia.uni.fmi.mjt.auth.server.user.model.User;
 
 import java.io.IOException;
 
-public class UserRepositoryImpl implements UserRepository {
+public class KeyValueUserRepository implements UserRepository {
 
     private final KeyValueDataStore<String, User> userStore;
     private final KeyValueDataStore<String, User> userCache;
 
-    public UserRepositoryImpl(final KeyValueDataStore<String, User> userStore,
-                              final KeyValueDataStore<String, User> userCache) throws IOException {
+    public KeyValueUserRepository(final KeyValueDataStore<String, User> userStore,
+                                  final KeyValueDataStore<String, User> userCache) throws IOException {
 
         this.userStore = userStore;
         this.userCache = userCache;
@@ -47,18 +47,9 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public void createAdmin(final String username) {
-        //TODO
-    }
-
-    @Override
-    public void deleteAdmin(final String username) {
-        //TODO
-    }
-
-    @Override
-    public void delete(final String username) {
-        //TODO
+    public User deleteByUsername(final String username) throws IOException {
+        final User user = userCache.deleteByKey(username);
+        return user == null ? null : userStore.deleteByKey(username);
     }
 
 }

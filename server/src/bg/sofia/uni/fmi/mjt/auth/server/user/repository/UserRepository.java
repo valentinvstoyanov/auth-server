@@ -12,10 +12,6 @@ public interface UserRepository {
 
     User getByUsername(String username) throws IOException;
 
-    void createAdmin(String username);
-
-    void deleteAdmin(String username);
-
-    void delete(String username);
+    User deleteByUsername(String username) throws IOException;
 
 }

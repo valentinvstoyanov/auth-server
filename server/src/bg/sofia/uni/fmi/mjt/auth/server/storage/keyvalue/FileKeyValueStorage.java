@@ -1,4 +1,6 @@
-package bg.sofia.uni.fmi.mjt.auth.server.storage;
+package bg.sofia.uni.fmi.mjt.auth.server.storage.keyvalue;
+
+import bg.sofia.uni.fmi.mjt.auth.server.storage.serializer.Serializer;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

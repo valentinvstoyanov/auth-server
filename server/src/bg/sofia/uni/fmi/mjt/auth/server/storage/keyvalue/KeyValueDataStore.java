@@ -1,4 +1,4 @@
-package bg.sofia.uni.fmi.mjt.auth.server.storage;
+package bg.sofia.uni.fmi.mjt.auth.server.storage.keyvalue;
 
 import java.io.IOException;
 import java.util.Map;

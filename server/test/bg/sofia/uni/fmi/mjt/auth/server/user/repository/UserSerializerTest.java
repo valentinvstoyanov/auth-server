@@ -1,6 +1,6 @@
 package bg.sofia.uni.fmi.mjt.auth.server.user.repository;
 
-import bg.sofia.uni.fmi.mjt.auth.server.storage.Serializer;
+import bg.sofia.uni.fmi.mjt.auth.server.storage.serializer.Serializer;
 import bg.sofia.uni.fmi.mjt.auth.server.user.model.User;
 import org.junit.Assert;
 import org.junit.Test;

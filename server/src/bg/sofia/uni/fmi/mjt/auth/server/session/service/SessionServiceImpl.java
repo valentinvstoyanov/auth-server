@@ -31,6 +31,9 @@ public class SessionServiceImpl implements SessionService {
         return sessionRepository.deleteSessionById(sessionId) != null;
     }
 
+    /*TODO: Basically this will serve as a way to "authenticate"(sessionId), i.e
+        authenticated <=> username != null
+    */
     @Override
     public String getUsernameBySessionId(final String sessionId) throws IOException {
         return sessionRepository.getUsernameByIdSession(sessionId);

@@ -1,7 +1,7 @@
 package bg.sofia.uni.fmi.mjt.auth.server.session.repository;
 
 import bg.sofia.uni.fmi.mjt.auth.server.session.model.Session;
-import bg.sofia.uni.fmi.mjt.auth.server.storage.Serializer;
+import bg.sofia.uni.fmi.mjt.auth.server.storage.serializer.Serializer;
 
 import java.time.LocalDateTime;
 

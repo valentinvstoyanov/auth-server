@@ -2,17 +2,17 @@ package bg.sofia.uni.fmi.mjt.auth.server.session.repository;
 
 import bg.sofia.uni.fmi.mjt.auth.server.session.model.Session;
 import bg.sofia.uni.fmi.mjt.auth.server.session.model.UsernameSession;
-import bg.sofia.uni.fmi.mjt.auth.server.storage.KeyValueDataStore;
+import bg.sofia.uni.fmi.mjt.auth.server.storage.keyvalue.KeyValueDataStore;
 
 import java.io.IOException;
 
-public class SessionRepositoryImpl implements SessionRepository {
+public class KeyValueSessionRepository implements SessionRepository {
 
     private final KeyValueDataStore<String, Session> usernameSessionStore;
     private final KeyValueDataStore<String, UsernameSession> sessionCache;
 
-    public SessionRepositoryImpl(final KeyValueDataStore<String, Session> usernameSessionStore,
-                                 final KeyValueDataStore<String, UsernameSession> sessionCache) throws IOException {
+    public KeyValueSessionRepository(final KeyValueDataStore<String, Session> usernameSessionStore,
+                                     final KeyValueDataStore<String, UsernameSession> sessionCache) throws IOException {
 
         this.usernameSessionStore = usernameSessionStore;
         this.sessionCache = sessionCache;

@@ -1,6 +1,6 @@
-package bg.sofia.uni.fmi.mjt.auth.server.command.authenticated;
+package bg.sofia.uni.fmi.mjt.auth.server.command.types.authenticated;
 
-import bg.sofia.uni.fmi.mjt.auth.server.session.service.CurrentSessionService;
+import bg.sofia.uni.fmi.mjt.auth.server.session.service.maybedelete.CurrentSessionService;
 import bg.sofia.uni.fmi.mjt.auth.server.session.service.SessionService;
 import bg.sofia.uni.fmi.mjt.auth.server.user.service.UserService;
 

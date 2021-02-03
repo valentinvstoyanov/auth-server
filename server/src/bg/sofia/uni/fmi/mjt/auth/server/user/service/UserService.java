@@ -72,9 +72,11 @@ public interface UserService {
                 String newPassword)
             throws InvalidUserDataException, UsernameAlreadyTakenException, IOException, InvalidUsernamePasswordCombination;
 
-    void addAdmin(String username);
-    void removeAdmin(String username);
-    void delete(String username);
+    boolean isAdmin(String username);
+
+    void addAdmin(String username) throws IOException;
+    boolean removeAdmin(String username) throws IOException;
+    void delete(String username) throws IOException;
 
     User getByUsername(String username) throws IOException;
 

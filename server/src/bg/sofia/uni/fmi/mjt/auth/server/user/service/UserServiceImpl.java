@@ -6,6 +6,7 @@ import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUserDataException;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUsernamePasswordCombination;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.UsernameAlreadyTakenException;
 import bg.sofia.uni.fmi.mjt.auth.server.user.model.User;
+import bg.sofia.uni.fmi.mjt.auth.server.user.repository.AdminRepository;
 import bg.sofia.uni.fmi.mjt.auth.server.user.repository.UserRepository;
 import bg.sofia.uni.fmi.mjt.auth.server.user.validator.UserValidator;
 
@@ -17,16 +18,18 @@ public class UserServiceImpl implements UserService {
     private final UserValidator userValidator;
     private final SessionService sessionService;
     private final PasswordEncoder passwordEncoder;
+    private final AdminRepository adminRepository;
 
     public UserServiceImpl(final UserRepository userRepository,
                            final UserValidator userValidator,
                            final SessionService sessionService,
-                           final PasswordEncoder passwordEncoder) {
+                           final PasswordEncoder passwordEncoder, final AdminRepository adminRepository) {
 
         this.userRepository = userRepository;
         this.userValidator = userValidator;
         this.sessionService = sessionService;
         this.passwordEncoder = passwordEncoder;
+        this.adminRepository = adminRepository;
     }
 
     @Override
@@ -125,18 +128,36 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void addAdmin(final String username) {
-        userRepository.createAdmin(username);
+    public boolean isAdmin(final String username) {
+        return adminRepository.isAdmin(username);
     }
 
     @Override
-    public void removeAdmin(final String username) {
-        userRepository.deleteAdmin(username);
+    public void addAdmin(final String username) throws IOException {
+        if (adminRepository.isAdmin(username)) {
+            return;
+        }
+        adminRepository.createAdmin(username);
     }
 
     @Override
-    public void delete(final String username) {
-        userRepository.delete(username);
+    public boolean removeAdmin(final String username) throws IOException {
+        if (!adminRepository.isAdmin(username)) {
+            return false;
+        }
+        if (adminRepository.getAllAdmins().size() == 1) {
+            return false;
+        }
+        adminRepository.deleteAdmin(username);
+        return true;
+    }
+
+    @Override
+    public void delete(final String username) throws IOException {
+        if (adminRepository.isAdmin(username) && !removeAdmin(username)) {
+            return;
+        }
+        userRepository.deleteByUsername(username);
     }
 
 }

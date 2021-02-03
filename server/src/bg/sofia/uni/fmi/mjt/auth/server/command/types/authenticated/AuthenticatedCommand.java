@@ -1,7 +1,7 @@
-package bg.sofia.uni.fmi.mjt.auth.server.command.authenticated;
+package bg.sofia.uni.fmi.mjt.auth.server.command.types.authenticated;
 
 import bg.sofia.uni.fmi.mjt.auth.server.command.Command;
-import bg.sofia.uni.fmi.mjt.auth.server.session.service.CurrentSessionService;
+import bg.sofia.uni.fmi.mjt.auth.server.session.service.maybedelete.CurrentSessionService;
 import bg.sofia.uni.fmi.mjt.auth.server.session.service.SessionService;
 
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package bg.sofia.uni.fmi.mjt.auth.server.storage;
+package bg.sofia.uni.fmi.mjt.auth.server.storage.serializer;
 
 public class StringSerializer implements Serializer<String> {
 

@@ -7,6 +7,7 @@ import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUserDataException;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUsernamePasswordCombination;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.UsernameAlreadyTakenException;
 import bg.sofia.uni.fmi.mjt.auth.server.user.model.User;
+import bg.sofia.uni.fmi.mjt.auth.server.user.repository.AdminRepository;
 import bg.sofia.uni.fmi.mjt.auth.server.user.repository.UserRepository;
 import bg.sofia.uni.fmi.mjt.auth.server.user.validator.UserValidator;
 import org.junit.Before;
@@ -53,6 +54,9 @@ public class UserServiceImplTest {
     @Mock
     private PasswordEncoder passwordEncoderMock;
 
+    @Mock
+    private AdminRepository adminRepository;
+
     private UserService userService;
 
     @Before
@@ -60,7 +64,8 @@ public class UserServiceImplTest {
         userService = new UserServiceImpl(userRepositoryMock,
                 userValidatorMock,
                 sessionServiceMock,
-                passwordEncoderMock);
+                passwordEncoderMock,
+                adminRepository);
     }
 
     private void testRegisterWithInvalidData(final String username, final String password, final String firstName,
