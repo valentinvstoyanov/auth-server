@@ -7,6 +7,7 @@ import bg.sofia.uni.fmi.mjt.auth.server.command.parser.ParsedCommand;
 import bg.sofia.uni.fmi.mjt.auth.server.command.validator.CommandValidator;
 import bg.sofia.uni.fmi.mjt.auth.server.command.validator.InvalidCommandException;
 
+import java.nio.channels.SocketChannel;
 import java.util.Map;
 
 public class CommandRequestHandler implements RequestHandler {
@@ -25,7 +26,7 @@ public class CommandRequestHandler implements RequestHandler {
     }
 
     @Override
-    public String handle(final String request) {
+    public String handle(final SocketChannel clientSocketChannel, final String request) {
         try {
             final ParsedCommand parsedCommand = commandParser.parse(request);
             final Command command = commands.get(parsedCommand.name());

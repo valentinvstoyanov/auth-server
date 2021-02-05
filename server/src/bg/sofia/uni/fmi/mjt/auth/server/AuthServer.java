@@ -159,7 +159,7 @@ public class AuthServer {
             if (request == null) {
                 return;
             }
-            response = requestHandler.handle(request);
+            response = requestHandler.handle(clientSocketChannel, request);
         } catch (IOException readIoException) {
             response = "Failed to read and process your request. Please try again later.";
             System.out.println("Failed to read client request: " + readIoException.getMessage());

@@ -1,7 +1,9 @@
 package bg.sofia.uni.fmi.mjt.auth.server.request;
 
+import java.nio.channels.SocketChannel;
+
 public interface RequestHandler {
 
-    String handle(String request);
+    String handle(SocketChannel clientSocketChannel, String request);
 
 }
