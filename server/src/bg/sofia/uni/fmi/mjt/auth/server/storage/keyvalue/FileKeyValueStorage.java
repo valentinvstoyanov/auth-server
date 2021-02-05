@@ -1,5 +1,6 @@
 package bg.sofia.uni.fmi.mjt.auth.server.storage.keyvalue;
 
+import bg.sofia.uni.fmi.mjt.auth.server.storage.exception.StorageException;
 import bg.sofia.uni.fmi.mjt.auth.server.storage.serializer.Serializer;
 
 import java.io.BufferedReader;
@@ -12,6 +13,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class FileKeyValueStorage<K, V> implements KeyValueDataStore<K, V> {
 
@@ -22,6 +24,15 @@ public class FileKeyValueStorage<K, V> implements KeyValueDataStore<K, V> {
     private static final int RECORD_PARTS_COUNT = 2;
     private static final int RECORD_KEY_INDEX = 0;
     private static final int RECORD_VALUE_INDEX = 1;
+
+    public static final String FAILED_TO_CREATE_TEMP_FILE = "Failed to create temp file.";
+    public static final String FAILED_TO_OPEN_TEMP_FILE_FOR_WRITING = "Failed to open temp file for writing.";
+    public static final String FAILED_TO_COPY_TEMP_FILE = "Failed to copy temp file to replace the storage file.";
+    public static final String FAILED_TO_INIT_KEYS_LINE_NUMBERS = "Failed to init keys line numbers.";
+    public static final String FAILED_TO_GET_FILE_LINES = "Failed to get lines from storage file.";
+    public static final String FAILED_TO_READ_FROM_FILE = "Failed to read storage from file.";
+    public static final String FAILED_TO_CREATED_STORAGE_FILE = "Failed to created storage file.";
+    public static final String FAILED_TO_PUT_TO_THE_STORAGE_FILE = "Failed to put to the storage file.";
 
     private final String recordsFilename;
     private final Path recordsPath;
@@ -36,7 +47,7 @@ public class FileKeyValueStorage<K, V> implements KeyValueDataStore<K, V> {
 
     public FileKeyValueStorage(final String recordsFilename,
                                final Serializer<K> keySerializer,
-                               final Serializer<V> valueSerializer) throws IOException {
+                               final Serializer<V> valueSerializer) {
 
         this.recordsFilename = recordsFilename;
         this.recordsPath = Path.of(this.recordsFilename);
@@ -47,17 +58,23 @@ public class FileKeyValueStorage<K, V> implements KeyValueDataStore<K, V> {
         if (Files.exists(this.recordsPath)) {
             initKeysLineNumbers();
         } else {
-            Files.createFile(recordsPath);
+            try {
+                Files.createFile(recordsPath);
+            } catch (final IOException e) {
+                throw new StorageException(FAILED_TO_CREATED_STORAGE_FILE, e);
+            }
         }
     }
 
     @Override
-    public V put(final K key, final V value) throws IOException {
+    public V put(final K key, final V value) {
         final Long lineNumber = keysLineNumbers.get(key);
         if (lineNumber == null) {
             try (BufferedWriter bufferedWriter = Files.newBufferedWriter(recordsPath, StandardOpenOption.APPEND)) {
                 bufferedWriter.write(serializeRecord(key, value));
                 bufferedWriter.newLine();
+            } catch (final IOException e) {
+                throw new StorageException(FAILED_TO_PUT_TO_THE_STORAGE_FILE, e);
             }
             keysLineNumbers.put(key, nextLineNumber++);
             return null;
@@ -72,7 +89,10 @@ public class FileKeyValueStorage<K, V> implements KeyValueDataStore<K, V> {
             previousValue = deserializeRecord(deletedLine).value();
             tempWriter.write(serializeRecord(key, value));
             tempWriter.newLine();
+        } catch (final IOException e) {
+            throw new StorageException(FAILED_TO_PUT_TO_THE_STORAGE_FILE, e);
         }
+
         copyTemp();
         keysLineNumbers.putAll(updatedLineNumbers);
         keysLineNumbers.put(key, nextLineNumber - 1);
@@ -80,7 +100,7 @@ public class FileKeyValueStorage<K, V> implements KeyValueDataStore<K, V> {
     }
 
     @Override
-    public V deleteByKey(final K key) throws IOException {
+    public V deleteByKey(final K key) {
         final Long lineNumber = keysLineNumbers.get(key);
         if (lineNumber == null) {
             return null;
@@ -93,6 +113,8 @@ public class FileKeyValueStorage<K, V> implements KeyValueDataStore<K, V> {
 
             final String deletedLine = deleteLine(lineNumber, updatedLineNumbers, bufferedReader, bufferedWriter);
             deletedValue = deserializeRecord(deletedLine).value();
+        } catch (IOException e) {
+            throw new StorageException(FAILED_TO_READ_FROM_FILE, e);
         }
 
         copyTemp();
@@ -103,14 +125,13 @@ public class FileKeyValueStorage<K, V> implements KeyValueDataStore<K, V> {
     }
 
     @Override
-    public V getByKey(final K key) throws IOException {
+    public V getByKey(final K key) {
         final Long lineNumber = keysLineNumbers.get(key);
         if (lineNumber == null) {
             return null;
         }
 
-        final String line = Files.lines(Path.of(recordsFilename))
-                .skip(lineNumber)
+        final String line = safeGetLines().skip(lineNumber)
                 .findFirst()
                 .orElse(null);
         if (line == null) {
@@ -122,10 +143,17 @@ public class FileKeyValueStorage<K, V> implements KeyValueDataStore<K, V> {
     }
 
     @Override
-    public Map<K, V> getAll() throws IOException {
-        return Files.lines(Path.of(recordsFilename))
-                .map(this::deserializeRecord)
+    public Map<K, V> getAll() {
+        return safeGetLines().map(this::deserializeRecord)
                 .collect(Collectors.toMap(Record::key, Record::value));
+    }
+
+    private Stream<String> safeGetLines() {
+        try {
+            return Files.lines(Path.of(recordsFilename));
+        } catch (final IOException e) {
+            throw new StorageException(FAILED_TO_GET_FILE_LINES, e);
+        }
     }
 
     private String serializeRecord(final K key, final V value) {
@@ -170,20 +198,32 @@ public class FileKeyValueStorage<K, V> implements KeyValueDataStore<K, V> {
         return deletedLine;
     }
 
-    private BufferedWriter getTempWriter() throws IOException {
+    private BufferedWriter getTempWriter() {
         if (tempPath == null) {
-            tempPath = Files.createTempFile(TEMP_RECORDS_PREFIX, TEMP_RECORDS_SUFFIX);
+            try {
+                tempPath = Files.createTempFile(TEMP_RECORDS_PREFIX, TEMP_RECORDS_SUFFIX);
+            } catch (final IOException e) {
+                throw new StorageException(FAILED_TO_CREATE_TEMP_FILE, e);
+            }
         }
-        return Files.newBufferedWriter(tempPath, StandardOpenOption.TRUNCATE_EXISTING);
+        try {
+            return Files.newBufferedWriter(tempPath, StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (final IOException e) {
+            throw new StorageException(FAILED_TO_OPEN_TEMP_FILE_FOR_WRITING, e);
+        }
     }
 
-    private void copyTemp() throws IOException {
+    private void copyTemp() {
         if (tempPath != null) {
-            Files.copy(tempPath, recordsPath, StandardCopyOption.REPLACE_EXISTING);
+            try {
+                Files.copy(tempPath, recordsPath, StandardCopyOption.REPLACE_EXISTING);
+            } catch (final IOException e) {
+                throw new StorageException(FAILED_TO_COPY_TEMP_FILE, e);
+            }
         }
     }
 
-    private void initKeysLineNumbers() throws IOException {
+    private void initKeysLineNumbers() {
         try (BufferedReader bufferedReader = Files.newBufferedReader(recordsPath)) {
             long currentLineNumber = 0;
 
@@ -193,12 +233,9 @@ public class FileKeyValueStorage<K, V> implements KeyValueDataStore<K, V> {
             }
 
             nextLineNumber = currentLineNumber;
+        } catch (final IOException e) {
+            throw new StorageException(FAILED_TO_INIT_KEYS_LINE_NUMBERS, e);
         }
-    }
-
-    private void append(final K key, final V value, final BufferedWriter bufferedWriter) throws IOException {
-        bufferedWriter.write(serializeRecord(key, value));
-        bufferedWriter.newLine();
     }
 
 }

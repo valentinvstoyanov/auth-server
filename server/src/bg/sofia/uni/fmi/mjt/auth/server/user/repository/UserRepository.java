@@ -2,16 +2,14 @@ package bg.sofia.uni.fmi.mjt.auth.server.user.repository;
 
 import bg.sofia.uni.fmi.mjt.auth.server.user.model.User;
 
-import java.io.IOException;
-
 public interface UserRepository {
 
-    void create(User user) throws IOException;
+    User createUser(User user);
 
-    void update(String oldUsername, User newUser) throws IOException;
+    User updateUser(String oldUsername, User newUser);
 
-    User getByUsername(String username) throws IOException;
+    User getUserByUsername(String username);
 
-    User deleteByUsername(String username) throws IOException;
+    User deleteUserByUsername(String username);
 
 }

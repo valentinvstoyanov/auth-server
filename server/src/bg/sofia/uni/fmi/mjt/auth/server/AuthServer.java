@@ -1,35 +1,38 @@
 package bg.sofia.uni.fmi.mjt.auth.server;
 
+import bg.sofia.uni.fmi.mjt.auth.server.authentication.model.Session;
+import bg.sofia.uni.fmi.mjt.auth.server.authentication.model.UsernameSession;
+import bg.sofia.uni.fmi.mjt.auth.server.authentication.repository.AuthenticationRepository;
+import bg.sofia.uni.fmi.mjt.auth.server.authentication.repository.KeyValueSessionAuthenticationRepository;
+import bg.sofia.uni.fmi.mjt.auth.server.authentication.repository.SessionSerializer;
+import bg.sofia.uni.fmi.mjt.auth.server.authentication.service.AuthenticationService;
+import bg.sofia.uni.fmi.mjt.auth.server.authentication.service.AuthenticationServiceImpl;
+import bg.sofia.uni.fmi.mjt.auth.server.authentication.service.session.CurrentSessionIdService;
+import bg.sofia.uni.fmi.mjt.auth.server.authentication.service.session.CurrentSessionIdServiceImpl;
 import bg.sofia.uni.fmi.mjt.auth.server.authorization.model.Role;
-import bg.sofia.uni.fmi.mjt.auth.server.authorization.model.Roles;
+import bg.sofia.uni.fmi.mjt.auth.server.authorization.model.CommonRoles;
+import bg.sofia.uni.fmi.mjt.auth.server.authorization.repository.AuthorizationRepository;
+import bg.sofia.uni.fmi.mjt.auth.server.authorization.repository.KeyValueAuthorizationRepository;
+import bg.sofia.uni.fmi.mjt.auth.server.authorization.repository.RoleSerializer;
 import bg.sofia.uni.fmi.mjt.auth.server.authorization.service.AuthorizationService;
-import bg.sofia.uni.fmi.mjt.auth.server.authorization.service.KeyValueAuthorizationService;
-import bg.sofia.uni.fmi.mjt.auth.server.authorization.service.RoleSerializer;
-import bg.sofia.uni.fmi.mjt.auth.server.command.Command;
-import bg.sofia.uni.fmi.mjt.auth.server.command.types.authenticated.LogoutCommand;
-import bg.sofia.uni.fmi.mjt.auth.server.command.types.authenticated.UpdatePasswordCommand;
-import bg.sofia.uni.fmi.mjt.auth.server.command.types.authenticated.UpdateUserCommand;
-import bg.sofia.uni.fmi.mjt.auth.server.command.types.authenticated.admin.AddAdminCommand;
-import bg.sofia.uni.fmi.mjt.auth.server.command.types.authenticated.admin.DeleteUserCommand;
-import bg.sofia.uni.fmi.mjt.auth.server.command.types.authenticated.admin.RemoveAdminCommand;
-import bg.sofia.uni.fmi.mjt.auth.server.command.types.unauthenticated.LoginCommand;
-import bg.sofia.uni.fmi.mjt.auth.server.command.types.unauthenticated.RegisterCommand;
+import bg.sofia.uni.fmi.mjt.auth.server.authorization.service.AuthorizationServiceImpl;
+import bg.sofia.uni.fmi.mjt.auth.server.authorization.service.RoleMatcher;
+import bg.sofia.uni.fmi.mjt.auth.server.authorization.service.RoleMatcherImpl;
+import bg.sofia.uni.fmi.mjt.auth.server.command.AddAdminCommand;
+import bg.sofia.uni.fmi.mjt.auth.server.command.DeleteUserCommand;
+import bg.sofia.uni.fmi.mjt.auth.server.command.LoginCommand;
+import bg.sofia.uni.fmi.mjt.auth.server.command.LogoutCommand;
+import bg.sofia.uni.fmi.mjt.auth.server.command.RegisterCommand;
+import bg.sofia.uni.fmi.mjt.auth.server.command.RemoveAdminCommand;
+import bg.sofia.uni.fmi.mjt.auth.server.command.UpdatePasswordCommand;
+import bg.sofia.uni.fmi.mjt.auth.server.command.UpdateUserCommand;
+import bg.sofia.uni.fmi.mjt.auth.server.command.base.Command;
 import bg.sofia.uni.fmi.mjt.auth.server.command.parser.CommandParser;
 import bg.sofia.uni.fmi.mjt.auth.server.command.parser.NameArgsCommandParser;
 import bg.sofia.uni.fmi.mjt.auth.server.command.validator.CommandValidator;
 import bg.sofia.uni.fmi.mjt.auth.server.command.validator.ParsedCommandValidator;
 import bg.sofia.uni.fmi.mjt.auth.server.request.CommandRequestHandler;
 import bg.sofia.uni.fmi.mjt.auth.server.request.RequestHandler;
-import bg.sofia.uni.fmi.mjt.auth.server.session.model.Session;
-import bg.sofia.uni.fmi.mjt.auth.server.session.model.UsernameSession;
-import bg.sofia.uni.fmi.mjt.auth.server.session.repository.SessionRepository;
-import bg.sofia.uni.fmi.mjt.auth.server.session.repository.KeyValueSessionRepository;
-import bg.sofia.uni.fmi.mjt.auth.server.session.repository.SessionSerializer;
-import bg.sofia.uni.fmi.mjt.auth.server.session.repository.UsernameSessionSerializer;
-import bg.sofia.uni.fmi.mjt.auth.server.session.service.maybedelete.CurrentSessionService;
-import bg.sofia.uni.fmi.mjt.auth.server.session.service.maybedelete.CurrentSessionServiceImpl;
-import bg.sofia.uni.fmi.mjt.auth.server.session.service.SessionService;
-import bg.sofia.uni.fmi.mjt.auth.server.session.service.SessionServiceImpl;
 import bg.sofia.uni.fmi.mjt.auth.server.storage.keyvalue.FileKeyValueStorage;
 import bg.sofia.uni.fmi.mjt.auth.server.storage.keyvalue.KeyValueDataStore;
 import bg.sofia.uni.fmi.mjt.auth.server.storage.keyvalue.MemoryKeyValueStorage;
@@ -38,10 +41,8 @@ import bg.sofia.uni.fmi.mjt.auth.server.storage.serializer.StringSerializer;
 import bg.sofia.uni.fmi.mjt.auth.server.user.encoder.IdentityPasswordEncoder;
 import bg.sofia.uni.fmi.mjt.auth.server.user.encoder.PasswordEncoder;
 import bg.sofia.uni.fmi.mjt.auth.server.user.model.User;
-import bg.sofia.uni.fmi.mjt.auth.server.user.repository.AdminRepository;
-import bg.sofia.uni.fmi.mjt.auth.server.user.repository.KeyValueAdminRepository;
-import bg.sofia.uni.fmi.mjt.auth.server.user.repository.UserRepository;
 import bg.sofia.uni.fmi.mjt.auth.server.user.repository.KeyValueUserRepository;
+import bg.sofia.uni.fmi.mjt.auth.server.user.repository.UserRepository;
 import bg.sofia.uni.fmi.mjt.auth.server.user.repository.UserSerializer;
 import bg.sofia.uni.fmi.mjt.auth.server.user.service.UserService;
 import bg.sofia.uni.fmi.mjt.auth.server.user.service.UserServiceImpl;
@@ -86,7 +87,7 @@ public class AuthServer {
             return;
         }
 
-        try(ServerSocketChannel serverSocketChannel = ServerSocketChannel.open()) {
+        try (ServerSocketChannel serverSocketChannel = ServerSocketChannel.open()) {
             serverSocketChannel.bind(new InetSocketAddress(HOST, PORT));
             serverSocketChannel.configureBlocking(false);
 
@@ -203,39 +204,24 @@ public class AuthServer {
 
     public static void main(String[] args) throws IOException {
         String userFileName = "test-users";
-        String adminFileName = "test-admin";
-        String sessionFileName = "test-sessions";
+        String authnFilename = "test-authn";
+        String authzFilename = "test-authz";
 
         Duration sessionDuration = Duration.ofDays(1);
 
         PasswordEncoder passwordEncoder = new IdentityPasswordEncoder();
 
         Serializer<String> stringSerializer = new StringSerializer();
-        Serializer<Session> sessionSerializer = new SessionSerializer();
-        Serializer<UsernameSession> usernameSessionSerializer = new UsernameSessionSerializer(sessionSerializer);
         Serializer<User> userSerializer = new UserSerializer();
-
-        KeyValueDataStore<String, Session> sessionStore = new FileKeyValueStorage<>(sessionFileName,
-                stringSerializer,
-                sessionSerializer);
-        KeyValueDataStore<String, UsernameSession> sessionCache = new MemoryKeyValueStorage<>();
-
-        SessionRepository sessionRepository = new KeyValueSessionRepository(sessionStore, sessionCache);
-        SessionService sessionService = new SessionServiceImpl(sessionDuration, sessionRepository);
 
         KeyValueDataStore<String, User> userStore = new FileKeyValueStorage<>(userFileName,
                 stringSerializer,
                 userSerializer);
         KeyValueDataStore<String, User> userCache = new MemoryKeyValueStorage<>();
 
-        KeyValueDataStore<String, String> adminStore = new FileKeyValueStorage<>(adminFileName,
-                stringSerializer,
-                stringSerializer);
-        AdminRepository adminRepository = new KeyValueAdminRepository(adminStore);
-
         UserValidator userValidator = new UserValidatorImpl();
         UserRepository userRepository = new KeyValueUserRepository(userStore, userCache);
-        UserService userService = new UserServiceImpl(userRepository, userValidator, sessionService, passwordEncoder, adminRepository);
+        UserService userService = new UserServiceImpl(userRepository, userValidator, passwordEncoder);
 
         Map<String, Command> commands = new HashMap<>();
 
@@ -245,18 +231,29 @@ public class AuthServer {
         AuthServer authServer = new AuthServer(requestHandler);
 
         Serializer<Role> roleSerializer = new RoleSerializer(stringSerializer);
-        KeyValueDataStore<String, Role> roleStore = new MemoryKeyValueStorage<>();
-        AuthorizationService authorizationService = new KeyValueAuthorizationService(roleStore);
+        KeyValueDataStore<String, Role> authzStore = new FileKeyValueStorage<>(authzFilename, stringSerializer, roleSerializer);
+        KeyValueDataStore<String, Role> authzCache = new MemoryKeyValueStorage<>();
+        AuthorizationRepository authorizationRepository = new KeyValueAuthorizationRepository(authzStore, authzCache);
+        RoleMatcher roleMatcher = new RoleMatcherImpl();
+        AuthorizationService authorizationService = new AuthorizationServiceImpl(authorizationRepository, roleMatcher);
 
-        CurrentSessionService currentSessionService = new CurrentSessionServiceImpl(authServer::getCurrentSelectionKey);
-        Command loginCommand = new LoginCommand(userService, currentSessionService);
-        Command registerCommand = new RegisterCommand(userService, currentSessionService);
-        Command updateCommand = new UpdateUserCommand(currentSessionService, sessionService, userService);
-        Command resetCommand = new UpdatePasswordCommand(currentSessionService, sessionService, userService);
-        Command logoutCommand = new LogoutCommand(currentSessionService, sessionService, userService);
-        Command addAdminCommand = new AddAdminCommand(userService, authorizationService, currentSessionService, sessionService);
-        Command removeAdminCommand = new RemoveAdminCommand(authorizationService, currentSessionService, sessionService, userService);
-        Command deleteUserCommand = new DeleteUserCommand(authorizationService, currentSessionService, sessionService, userService);
+
+        Serializer<Session> sessionSerializer = new SessionSerializer();
+        KeyValueDataStore<String, Session> authnStore = new FileKeyValueStorage<>(authnFilename, stringSerializer, sessionSerializer);
+        KeyValueDataStore<String, UsernameSession> authnCache = new MemoryKeyValueStorage<>();
+        AuthenticationRepository authenticationRepository = new KeyValueSessionAuthenticationRepository(authnStore, authnCache);
+        AuthenticationService authenticationService = new AuthenticationServiceImpl(sessionDuration, authenticationRepository, userService, passwordEncoder);
+
+        CurrentSessionIdService currentSessionIdService = new CurrentSessionIdServiceImpl(authServer::getCurrentSelectionKey);
+
+        Command loginCommand = new LoginCommand(currentSessionIdService, authenticationService);
+        Command registerCommand = new RegisterCommand(userService, currentSessionIdService, authenticationService, authorizationService);
+        Command updateCommand = new UpdateUserCommand(currentSessionIdService, authenticationService, authorizationService, userService);
+        Command resetCommand = new UpdatePasswordCommand(currentSessionIdService, authenticationService, authorizationService, userService);
+        Command logoutCommand = new LogoutCommand(currentSessionIdService, authenticationService);
+        Command addAdminCommand = new AddAdminCommand(currentSessionIdService, authenticationService, authorizationService);
+        Command removeAdminCommand = new RemoveAdminCommand(currentSessionIdService, authenticationService, authorizationService);
+        Command deleteUserCommand = new DeleteUserCommand(currentSessionIdService, authenticationService, authorizationService, userService);
 
         commands.put(loginCommand.name(), loginCommand);
         commands.put(registerCommand.name(), registerCommand);
@@ -267,9 +264,13 @@ public class AuthServer {
         commands.put(removeAdminCommand.name(), removeAdminCommand);
         commands.put(deleteUserCommand.name(), deleteUserCommand);
 
-        final User admin = new User("admin", "admin", "admin", "admin", "admin");
-        userRepository.create(admin);
-        authorizationService.setRole(admin.username(), Roles.ADMIN.role);
+        if (userCache.getAll().isEmpty()) {
+            final User admin = new User("admin", "admin", "admin", "admin", "admin");
+            userRepository.createUser(admin);
+            authenticationService.authenticate(admin.username(), admin.password());
+            authorizationService.assign(admin.username(), CommonRoles.ADMIN.role);
+            System.out.println("admin added.");
+        }
 
         authServer.start();
     }

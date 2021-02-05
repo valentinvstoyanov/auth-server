@@ -1,6 +1,6 @@
 package bg.sofia.uni.fmi.mjt.auth.server.request;
 
-import bg.sofia.uni.fmi.mjt.auth.server.command.Command;
+import bg.sofia.uni.fmi.mjt.auth.server.command.base.Command;
 import bg.sofia.uni.fmi.mjt.auth.server.command.parser.CommandParseException;
 import bg.sofia.uni.fmi.mjt.auth.server.command.parser.CommandParser;
 import bg.sofia.uni.fmi.mjt.auth.server.command.parser.ParsedCommand;
