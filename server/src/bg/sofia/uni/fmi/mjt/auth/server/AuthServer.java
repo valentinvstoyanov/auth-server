@@ -206,7 +206,7 @@ public class AuthServer {
         return currentSelectionKey;
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         String userFilename = "test-users";
         String authnFilename = "test-authn";
         String authzFilename = "test-authz";
