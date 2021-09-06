@@ -31,7 +31,7 @@ public class CommandRequestHandler implements RequestHandler {
             final ParsedCommand parsedCommand = commandParser.parse(request);
             final Command command = commands.get(parsedCommand.name());
             commandValidator.validate(parsedCommand, command);
-            return command.execute(parsedCommand.args());
+            return command.execute(clientSocketChannel, parsedCommand.args());
         } catch (CommandParseException | InvalidCommandException e) {
             return e.getMessage();
         }

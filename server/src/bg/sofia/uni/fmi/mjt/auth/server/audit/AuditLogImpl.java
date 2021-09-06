@@ -3,28 +3,27 @@ package bg.sofia.uni.fmi.mjt.auth.server.audit;
 
 import bg.sofia.uni.fmi.mjt.auth.server.storage.keyvalue.KeyValueDataStore;
 
-import java.util.Collection;
-import java.util.Collections;
-
 public class AuditLogImpl implements AuditLog {
 
-    private final KeyValueDataStore<String, Collection<String>> logStore;
+    private static final String MESSAGE_DELIMITER = ", ";
 
-    public AuditLogImpl(final KeyValueDataStore<String, Collection<String>> logStore) {
+    private final KeyValueDataStore<String, String> logStore;
+
+    public AuditLogImpl(final KeyValueDataStore<String, String> logStore) {
         this.logStore = logStore;
     }
 
     public void log(final String tag, final String message) {
-        Collection<String> messages = logStore.getByKey(tag);
+        String messages = logStore.getByKey(tag);
         if (messages == null) {
-            messages = Collections.singleton(message);
+            messages = message + MESSAGE_DELIMITER;
         } else {
-            messages.add(message);
+            messages += message + ", ";
         }
         logStore.put(tag, messages);
     }
 
-    public Collection<String> getLogsByTag(final String tag) {
+    public String getLogsByTag(final String tag) {
         return logStore.getByKey(tag);
     }
 

@@ -1,9 +1,13 @@
 package bg.sofia.uni.fmi.mjt.auth.server.command;
 
+import bg.sofia.uni.fmi.mjt.auth.server.audit.AuditLog;
 import bg.sofia.uni.fmi.mjt.auth.server.authentication.service.AuthenticationService;
 import bg.sofia.uni.fmi.mjt.auth.server.authentication.service.session.CurrentSessionIdService;
 import bg.sofia.uni.fmi.mjt.auth.server.command.base.UnauthenticatedCommand;
+import bg.sofia.uni.fmi.mjt.auth.server.ip.IpExtractor;
 
+import java.nio.channels.SocketChannel;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,16 +17,26 @@ import static bg.sofia.uni.fmi.mjt.auth.server.command.CommonArgs.USERNAME;
 
 public class LoginCommand extends UnauthenticatedCommand {
 
-    public static final String NAME = "login";
-    public static final String AUTHENTICATION_FAILED = "Authentication failed.";
-    public static final String INVALID_ARGUMENTS_COMBINATION = "Invalid arguments combination.";
+    private static final String NAME = "login";
+    private static final String AUTHENTICATION_FAILED = "Authentication failed.";
+    private static final String INVALID_ARGUMENTS_COMBINATION = "Invalid arguments combination.";
+    private static final String FAILED_LOGIN_MESSAGE = "Timestamp: %s - User: %s - IP: %s";
+    private static final String FAILED_LOGIN_TAG = "failed-login";
 
     private final AuthenticationService authenticationService;
 
+    private final AuditLog auditLog;
+
+    private final IpExtractor ipExtractor;
+
     public LoginCommand(final CurrentSessionIdService currentSessionIdService,
-                        final AuthenticationService authenticationService) {
+                        final AuthenticationService authenticationService,
+                        final AuditLog auditLog,
+                        final IpExtractor ipExtractor) {
         super(currentSessionIdService);
         this.authenticationService = authenticationService;
+        this.auditLog = auditLog;
+        this.ipExtractor = ipExtractor;
     }
 
     @Override
@@ -41,7 +55,7 @@ public class LoginCommand extends UnauthenticatedCommand {
     }
 
     @Override
-    protected String unauthenticatedExecute(final Map<String, String> args) {
+    protected String unauthenticatedExecute(final SocketChannel clientSocketChannel, final Map<String, String> args) {
         final String username = args.get(USERNAME.toString());
         final String password = args.get(PASSWORD.toString());
         final String sessionId = args.get(SESSION_ID.toString());
@@ -51,6 +65,7 @@ public class LoginCommand extends UnauthenticatedCommand {
 
         final String authenticatedSessionId = authenticate(username, password, sessionId);
         if (authenticatedSessionId == null) {
+            logFailedLogin(username == null ? sessionId : username, ipExtractor.extract(clientSocketChannel));
             return AUTHENTICATION_FAILED;
         }
 
@@ -72,6 +87,11 @@ public class LoginCommand extends UnauthenticatedCommand {
             return true;
         }
         return username == null && password == null && sessionId != null;
+    }
+
+    private void logFailedLogin(final String usernameOrSessionId, final String ip) {
+        final String message = String.format(FAILED_LOGIN_MESSAGE, LocalDateTime.now(), usernameOrSessionId, ip);
+        auditLog.log(FAILED_LOGIN_TAG, message);
     }
 
 }

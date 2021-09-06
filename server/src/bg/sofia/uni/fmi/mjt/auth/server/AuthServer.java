@@ -1,5 +1,7 @@
 package bg.sofia.uni.fmi.mjt.auth.server;
 
+import bg.sofia.uni.fmi.mjt.auth.server.audit.AuditLog;
+import bg.sofia.uni.fmi.mjt.auth.server.audit.AuditLogImpl;
 import bg.sofia.uni.fmi.mjt.auth.server.authentication.model.Session;
 import bg.sofia.uni.fmi.mjt.auth.server.authentication.model.UsernameSession;
 import bg.sofia.uni.fmi.mjt.auth.server.authentication.repository.AuthenticationRepository;
@@ -9,8 +11,8 @@ import bg.sofia.uni.fmi.mjt.auth.server.authentication.service.AuthenticationSer
 import bg.sofia.uni.fmi.mjt.auth.server.authentication.service.AuthenticationServiceImpl;
 import bg.sofia.uni.fmi.mjt.auth.server.authentication.service.session.CurrentSessionIdService;
 import bg.sofia.uni.fmi.mjt.auth.server.authentication.service.session.CurrentSessionIdServiceImpl;
-import bg.sofia.uni.fmi.mjt.auth.server.authorization.model.Role;
 import bg.sofia.uni.fmi.mjt.auth.server.authorization.model.CommonRoles;
+import bg.sofia.uni.fmi.mjt.auth.server.authorization.model.Role;
 import bg.sofia.uni.fmi.mjt.auth.server.authorization.repository.AuthorizationRepository;
 import bg.sofia.uni.fmi.mjt.auth.server.authorization.repository.KeyValueAuthorizationRepository;
 import bg.sofia.uni.fmi.mjt.auth.server.authorization.repository.RoleSerializer;
@@ -31,6 +33,8 @@ import bg.sofia.uni.fmi.mjt.auth.server.command.parser.CommandParser;
 import bg.sofia.uni.fmi.mjt.auth.server.command.parser.NameArgsCommandParser;
 import bg.sofia.uni.fmi.mjt.auth.server.command.validator.CommandValidator;
 import bg.sofia.uni.fmi.mjt.auth.server.command.validator.ParsedCommandValidator;
+import bg.sofia.uni.fmi.mjt.auth.server.ip.IpExtractor;
+import bg.sofia.uni.fmi.mjt.auth.server.ip.IpExtractorImpl;
 import bg.sofia.uni.fmi.mjt.auth.server.request.CommandRequestHandler;
 import bg.sofia.uni.fmi.mjt.auth.server.request.RequestHandler;
 import bg.sofia.uni.fmi.mjt.auth.server.storage.keyvalue.FileKeyValueStorage;
@@ -203,9 +207,10 @@ public class AuthServer {
     }
 
     public static void main(String[] args) throws IOException {
-        String userFileName = "test-users";
+        String userFilename = "test-users";
         String authnFilename = "test-authn";
         String authzFilename = "test-authz";
+        String logFilename = "test-logs";
 
         Duration sessionDuration = Duration.ofDays(1);
 
@@ -214,7 +219,7 @@ public class AuthServer {
         Serializer<String> stringSerializer = new StringSerializer();
         Serializer<User> userSerializer = new UserSerializer();
 
-        KeyValueDataStore<String, User> userStore = new FileKeyValueStorage<>(userFileName,
+        KeyValueDataStore<String, User> userStore = new FileKeyValueStorage<>(userFilename,
                 stringSerializer,
                 userSerializer);
         KeyValueDataStore<String, User> userCache = new MemoryKeyValueStorage<>();
@@ -237,7 +242,6 @@ public class AuthServer {
         RoleMatcher roleMatcher = new RoleMatcherImpl();
         AuthorizationService authorizationService = new AuthorizationServiceImpl(authorizationRepository, roleMatcher);
 
-
         Serializer<Session> sessionSerializer = new SessionSerializer();
         KeyValueDataStore<String, Session> authnStore = new FileKeyValueStorage<>(authnFilename, stringSerializer, sessionSerializer);
         KeyValueDataStore<String, UsernameSession> authnCache = new MemoryKeyValueStorage<>();
@@ -246,13 +250,18 @@ public class AuthServer {
 
         CurrentSessionIdService currentSessionIdService = new CurrentSessionIdServiceImpl(authServer::getCurrentSelectionKey);
 
-        Command loginCommand = new LoginCommand(currentSessionIdService, authenticationService);
+        KeyValueDataStore<String, String> logStore = new FileKeyValueStorage<>(logFilename, stringSerializer, stringSerializer);
+        AuditLog auditLog = new AuditLogImpl(logStore);
+
+        IpExtractor ipExtractor = new IpExtractorImpl();
+
+        Command loginCommand = new LoginCommand(currentSessionIdService, authenticationService, auditLog, ipExtractor);
         Command registerCommand = new RegisterCommand(userService, currentSessionIdService, authenticationService, authorizationService);
         Command updateCommand = new UpdateUserCommand(currentSessionIdService, authenticationService, authorizationService, userService);
         Command resetCommand = new UpdatePasswordCommand(currentSessionIdService, authenticationService, authorizationService, userService);
         Command logoutCommand = new LogoutCommand(currentSessionIdService, authenticationService);
-        Command addAdminCommand = new AddAdminCommand(currentSessionIdService, authenticationService, authorizationService);
-        Command removeAdminCommand = new RemoveAdminCommand(currentSessionIdService, authenticationService, authorizationService);
+        Command addAdminCommand = new AddAdminCommand(currentSessionIdService, authenticationService, authorizationService, auditLog, ipExtractor);
+        Command removeAdminCommand = new RemoveAdminCommand(currentSessionIdService, authenticationService, authorizationService, auditLog, ipExtractor);
         Command deleteUserCommand = new DeleteUserCommand(currentSessionIdService, authenticationService, authorizationService, userService);
 
         commands.put(loginCommand.name(), loginCommand);

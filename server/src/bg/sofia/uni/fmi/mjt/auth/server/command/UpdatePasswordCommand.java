@@ -3,7 +3,6 @@ package bg.sofia.uni.fmi.mjt.auth.server.command;
 import bg.sofia.uni.fmi.mjt.auth.server.authentication.service.AuthenticationService;
 import bg.sofia.uni.fmi.mjt.auth.server.authentication.service.session.CurrentSessionIdService;
 import bg.sofia.uni.fmi.mjt.auth.server.authorization.model.Role;
-import bg.sofia.uni.fmi.mjt.auth.server.authorization.model.CommonRoles;
 import bg.sofia.uni.fmi.mjt.auth.server.authorization.service.AuthorizationService;
 import bg.sofia.uni.fmi.mjt.auth.server.command.base.AuthorizedCommand;
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUserDataException;
@@ -11,6 +10,7 @@ import bg.sofia.uni.fmi.mjt.auth.server.user.exception.InvalidUsernamePasswordCo
 import bg.sofia.uni.fmi.mjt.auth.server.user.exception.UsernameAlreadyTakenException;
 import bg.sofia.uni.fmi.mjt.auth.server.user.service.UserService;
 
+import java.nio.channels.SocketChannel;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,7 +37,7 @@ public class UpdatePasswordCommand extends AuthorizedCommand {
 
 
     @Override
-    protected String authorizedExecute(final Map<String, String> args) {
+    protected String authorizedExecute(final SocketChannel clientSocketChannel, final Map<String, String> args) {
         final String sessionId = currentSessionIdService.get();
         final String sessionUsername = authenticationService.getUsernameBySessionId(sessionId);
         final String username = args.get(USERNAME.toString());

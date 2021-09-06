@@ -3,6 +3,7 @@ package bg.sofia.uni.fmi.mjt.auth.server.command.base;
 import bg.sofia.uni.fmi.mjt.auth.server.authentication.service.AuthenticationService;
 import bg.sofia.uni.fmi.mjt.auth.server.authentication.service.session.CurrentSessionIdService;
 
+import java.nio.channels.SocketChannel;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -22,7 +23,7 @@ public abstract class AuthenticatedCommand extends Command {
         this.authenticationService = authenticationService;
     }
 
-    protected abstract String authenticatedExecute(final Map<String, String> args);
+    protected abstract String authenticatedExecute(final SocketChannel clientSocketChannel, final Map<String, String> args);
 
     protected abstract Set<String> otherRequiredArgs();
 
@@ -35,14 +36,14 @@ public abstract class AuthenticatedCommand extends Command {
     }
 
     @Override
-    public final String execute(final Map<String, String> args) {
+    public final String execute(final SocketChannel clientSocketChannel, final Map<String, String> args) {
         final String sessionId = args.get(SESSION_ID.toString());
         if (!authenticationService.validate(sessionId)) {
             currentSessionIdService.clear();
             return INVALID_SESSION_ID;
         }
         currentSessionIdService.set(sessionId);
-        return authenticatedExecute(args);
+        return authenticatedExecute(clientSocketChannel, args);
     }
 
 }

@@ -4,6 +4,7 @@ import bg.sofia.uni.fmi.mjt.auth.server.authentication.service.AuthenticationSer
 import bg.sofia.uni.fmi.mjt.auth.server.authentication.service.session.CurrentSessionIdService;
 import bg.sofia.uni.fmi.mjt.auth.server.command.base.AuthenticatedCommand;
 
+import java.nio.channels.SocketChannel;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,7 +22,7 @@ public class LogoutCommand extends AuthenticatedCommand {
 
 
     @Override
-    protected String authenticatedExecute(final Map<String, String> args) {
+    protected String authenticatedExecute(final SocketChannel clientSocketChannel, final Map<String, String> args) {
         final String sessionId = currentSessionIdService.get();
         if (!authenticationService.invalidate(sessionId)) {
             return FAILED_LOGOUT;

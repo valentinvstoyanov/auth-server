@@ -11,6 +11,7 @@ public class NameArgsCommandParser implements CommandParser {
     public static final int ARGS_INDEX = 1;
     public static final int COMMAND_PARTS = 2;
 
+    @Override
     public ParsedCommand parse(final String commandStr) throws CommandParseException {
         final String[] nameArgs = commandStr.split(DELIM, COMMAND_PARTS);
         final String name = nameArgs[NAME_INDEX];

@@ -8,6 +8,7 @@ import bg.sofia.uni.fmi.mjt.auth.server.authorization.service.AuthorizationServi
 import bg.sofia.uni.fmi.mjt.auth.server.command.base.AuthorizedCommand;
 import bg.sofia.uni.fmi.mjt.auth.server.user.service.UserService;
 
+import java.nio.channels.SocketChannel;
 import java.util.Map;
 import java.util.Set;
 
@@ -47,7 +48,7 @@ public class DeleteUserCommand extends AuthorizedCommand {
     }
 
     @Override
-    protected String authorizedExecute(final Map<String, String> args) {
+    protected String authorizedExecute(final SocketChannel clientSocketChannel, final Map<String, String> args) {
         final String username = args.get(USERNAME.toString());
 
         if (authorizationService.authorize(username, ADMIN.role)) {

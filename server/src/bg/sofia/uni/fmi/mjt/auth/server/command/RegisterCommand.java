@@ -10,6 +10,7 @@ import bg.sofia.uni.fmi.mjt.auth.server.user.exception.UsernameAlreadyTakenExcep
 import bg.sofia.uni.fmi.mjt.auth.server.user.model.User;
 import bg.sofia.uni.fmi.mjt.auth.server.user.service.UserService;
 
+import java.nio.channels.SocketChannel;
 import java.util.Map;
 import java.util.Set;
 
@@ -57,7 +58,7 @@ public class RegisterCommand extends UnauthenticatedCommand {
     }
 
     @Override
-    protected String unauthenticatedExecute(final Map<String, String> args) {
+    protected String unauthenticatedExecute(final SocketChannel clientSocketChannel, final Map<String, String> args) {
         final String username = args.get(USERNAME.toString());
         final String password = args.get(PASSWORD.toString());
         final String firstName = args.get(FIRST_NAME.toString());

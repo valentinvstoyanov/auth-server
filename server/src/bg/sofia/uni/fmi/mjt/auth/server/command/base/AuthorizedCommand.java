@@ -5,6 +5,7 @@ import bg.sofia.uni.fmi.mjt.auth.server.authentication.service.session.CurrentSe
 import bg.sofia.uni.fmi.mjt.auth.server.authorization.model.Role;
 import bg.sofia.uni.fmi.mjt.auth.server.authorization.service.AuthorizationService;
 
+import java.nio.channels.SocketChannel;
 import java.util.Map;
 
 public abstract class AuthorizedCommand extends AuthenticatedCommand {
@@ -20,16 +21,16 @@ public abstract class AuthorizedCommand extends AuthenticatedCommand {
         this.authorizationService = authorizationService;
     }
 
-    protected abstract String authorizedExecute(Map<String, String> args);
+    protected abstract String authorizedExecute(final SocketChannel clientSocketChannel, Map<String, String> args);
 
     protected abstract Role allowedRole();
 
     @Override
-    protected final String authenticatedExecute(final Map<String, String> args) {
+    protected final String authenticatedExecute(final SocketChannel clientSocketChannel, final Map<String, String> args) {
         final String sessionId = currentSessionIdService.get();
         final String username = authenticationService.getUsernameBySessionId(sessionId);
         if (authorizationService.authorize(username, allowedRole())) {
-            return authorizedExecute(args);
+            return authorizedExecute(clientSocketChannel, args);
         }
         return UNAUTHORIZED;
     }
